@@ -230,7 +230,7 @@ class bitVector:
                     self.activeWordIndex += 1
             
         
-        
+        self.storage = self.newBitVector
         
      
             
