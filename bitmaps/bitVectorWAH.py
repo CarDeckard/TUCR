@@ -27,6 +27,13 @@ class bitVector:
         # Another literal is always added if the active word gets full.
         self.activeWordIndex = 0 # this is the index of the active word
         
+        #New Vector Storage Variables
+        self.newBitVector = np.zeros(1,dtype=np.uint64)
+        
+        self.newBitVectorIndex = 0
+        
+        self.numNewWords = 0
+        
     
     def isLiteral(self,word):
         return word >> self.wordSizeInBits - np.uint64(1) == 0
@@ -72,15 +79,50 @@ class bitVector:
                     self.partialLiteralLength = 0
                     self.activeWordIndex += 1
                     self.numWords += 1
-           
-                    
+            #Checks if not fill and needs to be expanded        
+            self.ensureStorageFits(self.numWords + 1)
+            self.partialLiteralLength = 0
+            self.activeWordIndex += 1
+            self.numWords += 1
+                   
+    #def appendRun(runType,length):
+      
+    def appendWord(self,word):
+        #appends a word to a new bitVector based on logical operations
+        #Will also check if word is a run
+    
+        #Word was a literal
+        if word >> np.uint64(63) == 0:
+            #Puts word in spot
+            self.newBitVector[self.newBitVectorIndex] = word
+            
+        #Word was a run
+        #else:
+        
+            
+        
+    def xor(self,other):
         
         
+        #Sets activeWordIndex to zero for both self and other
+        self.activeWordIndex = 0
+        other.activeWordIndex = 0
+        for i in range(len(other.storage)):
+            
+            #checks for cases
+            selfCheck = self.storage[self.activeWordIndex] >> np.uint64(63)
+            otherCheck = other.storage[other.activeWordIndex] >> np.uint64(63)
+            
+            #Case 1: Both are literals
+            if selfCheck == otherCheck and selfCheck == 0:
+                newWrd = self.storage[self.activeWordIndex] ^ other.storage[other.activeWordIndex]
+                self.appendWord(newWrd)
+                #Checks if storage needs expanded
+                self.ensureStorageFits(self.numNewWords + 1)
         
-    #def xor(self,other):
-        
-        
-        
+            self.activeWordIndex += 1
+            other.activeWordIndex += 1
+            print self.newBitVector
         
     #def get():
         
