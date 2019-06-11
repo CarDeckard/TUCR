@@ -108,10 +108,10 @@ class bitVector:
     
         #Case 1: word is literal
         if word >> np.uint64(63) == 0:
-            #Sets word in correct spot in newBitVector
-            self.newBitVector[self.newBitVectorIndex] = word
             #CHecks if newBitVector needs to be expanded
             self.ensureNewBitVectorFits(self.newBitVectorIndex + 1)
+            #Sets word in correct spot in newBitVector
+            self.newBitVector[self.newBitVectorIndex] += word
             #Iterates the index to the new spot
             self.newBitVectorIndex += 1
         #Case 2: word is run
@@ -138,14 +138,98 @@ class bitVector:
             #Case 1: Both are literals
             if selfCheck == otherCheck and selfCheck == 0:
                 newWrd = self.storage[self.activeWordIndex] ^ other.storage[other.activeWordIndex]
+                newWrd &= ~(np.uint64(1) << np.uint64(63))
                 self.appendWord(newWrd)
-                #FIXME: ensureFits needs to be fixed to account for newBitVector
-                #Checks if storage needs expanded
-                self.ensureNewBitVectorFits(self.numNewWords + 1)
+                
+                self.activeWordIndex += 1
+                other.activeWordIndex += 1
+                
+            #Case 2: Both are fills
+            if selfCheck == otherCheck and selfCheck == 1:
+                
+                getLength = np.uint64(1) << np.uint(63)
+                getLength += np.uint64(1) << np.uint64(62)
+                selfLength = self.storage[self.activeWordIndex] & ~(getLength)
+                otherLength = other.storage[other.activeWordIndex] & ~(getLength)
+                
+                if selfLength != otherLength:
+                    if selfLength > otherLength:
+                        self.storage[self.activeWordIndex] -= otherLength
+                        totalLength = otherLength
+                    if otherLength > selfLength:
+                        other.storage[other.activeWordIndex] -= selfLength
+                        totalLength = selfLength
+                else:
+                    totalLength = selfLength
+                        
+                
+                selfRunType = (self.storage[self.activeWordIndex] >> np.uint64(62)) & np.uint64(1)
+                otherRunType = (other.storage[other.activeWordIndex] >> np.uint64(62)) & np.uint64(1)
+                
+                if selfRunType == otherRunType and selfRunType == 1:
+                    self.appendRun(1,totalLength)
+                if selfRunType == otherRunType and selfRunType == 0:
+                    self.appendRun(0,totalLength)
+                if selfRunType != otherRunType:
+                    self.appendRun(1,totalLength)
+                    
+                if selfLength > otherLength:
+                    other.activeWordIndex += 1
+                if selfLength < otherLength:
+                    self.activeWordIndex += 1
+                else:
+                    self.activeWordIndex += 1
+                    other.activeWordIndex += 1
+
+            #Case 3: One is literal and one is run
+            if selfCheck != otherCheck and (selfCheck == 0 or otherCheck == 0):
+                
+                if selfCheck == 1:
+                    selfRunType = (self.storage[self.activeWordIndex] >> np.uint64(62)) & np.uint64(1)
+                    if selfRunType == 1:                    
+                        tmpWrd = ~(np.uint64(1) << np.uint64(63))
+                        tmpWrd += np.uint64(1) << np.uint64(63)
+                    else:
+                        tmpWrd = np.uint64(1) << np.uint64(63)
+                    
+                if otherCheck == 1:
+                    otherRunType = (other.storage[other.activeWordIndex] >> np.uint64(62)) & np.uint64(1)
+                    if otherRunType == 1:
+                        tmpWrd = ~(np.uint64(1) << np.uint64(63))
+                        tmpWrd += np.uint64(1) << np.uint64(63)
+                    else:
+                        tmpWrd = np.uint64(1) << np.uint64(63)
+                        
+                if selfCheck == 0:
+                    newWrd = self.storage[self.activeWordIndex] ^ tmpWrd
+                    newWrd &= ~(np.uint64(1) << np.uint64(63))
+                    self.appendWord(newWrd)
+                if otherCheck == 0:
+                    newWrd = other.storage[other.activeWordIndex] ^ tmpWrd
+                    newWrd &= ~(np.uint64(1) << np.uint64(63))
+                    self.appendWord(newWrd)
+                    
+                if selfCheck == 1:
+                    getLength = np.uint64(1) << np.uint(63)
+                    getLength += np.uint64(1) << np.uint64(62)
+                    selfLength = self.storage[self.activeWordIndex] & ~(getLength)
+                    if selfLength - 1 == 0:
+                        self.activeWordIndex += 1
+                    else:
+                        self.storage[self.activeWordIndex] -= 1
+                    other.activeWordIndex += 1
+                        
+                if otherCheck == 1:
+                    getLength = np.uint64(1) << np.uint(63)
+                    getLength += np.uint64(1) << np.uint64(62)
+                    otherLength = other.storage[other.activeWordIndex] & ~(getLength)
+                    if otherLength - 1 == 0:
+                        other.activeWordIndex += 1
+                    else:
+                        other.storage[other.activeWordIndex] -= 1
+                    self.activeWordIndex += 1
+            
         
-            self.activeWordIndex += 1
-            other.activeWordIndex += 1
-            print self.newBitVector
         
         
      
@@ -154,16 +238,7 @@ class bitVector:
         for i in self.storage:
             print np.binary_repr(i, width = 64)
     
-data = np.array([4,5,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4])
-dataHeaders = np.unique(data)
+
 c = bitVector()
-#print dataHeaders
-#for i in data:
-#    if i == 4:
-#        c.append(1)
-#    else:
-#        c.append(0)
+d = bitVector()
 
-c.printBitVector()
-
-print c.numRows
