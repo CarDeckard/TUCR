@@ -82,6 +82,7 @@ class bitVector:
                     self.partialLiteralLength = 0
                     self.activeWordIndex += 1
                     self.numWords += 1
+                return
             #Checks if not fill and needs to be expanded    
             if self.storage[self.activeWordIndex - 1] >> np.uint64(63) == 0b0:
                 print 'Hey booboo'
@@ -96,32 +97,39 @@ class bitVector:
         word += np.uint64(runType) << np.uint64(62)
         word += length
         
-        self.newBitVector[self.newBitVectorIndex] = word
+        prevRunType = self.newBitVector[self.newBitVectorIndex - 1] & (np.uint64(1) << np.uint64(62))
         
-        self.ensureNewBitVectorFits(self.newBitVectorIndex + 1)
-        
-        self.newBitVectorIndex += 1
+        if prevRunType == runType:
+            self.newBitVector[self.newBitVectorIndex - 1] += length
+        else:
+            self.ensureNewBitVectorFits(self.newBitVectorIndex + 1)        
+            
+            self.newBitVector[self.newBitVectorIndex] = word
+            
+            self.newBitVectorIndex += 1
       
     def appendWord(self,word):
         #appends a word to a new bitVector based on logical operations
         #Will also check if word is a run
     
-        #Case 1: word is literal
-        if word >> np.uint64(63) == 0:
-            #CHecks if newBitVector needs to be expanded
-            self.ensureNewBitVectorFits(self.newBitVectorIndex + 1)
-            #Sets word in correct spot in newBitVector
-            self.newBitVector[self.newBitVectorIndex] += word
-            #Iterates the index to the new spot
-            self.newBitVectorIndex += 1
-        #Case 2: word is run
-        else:
+        #Case 1: word is run
+        if word == ~(np.uint64(1) << np.uint64(63)) or word == np.uint64(0):
             runType = (word >> np.uint64(62)) & np.uint64(1)
             getLength = np.uint64(1) << np.uint(63)
             getLength += np.uint64(1) << np.uint64(62)
             length = word & ~(getLength)
             
             self.appendRun(runType,length)
+            
+        #Case 2: word is literal
+        else:
+            #CHecks if newBitVector needs to be expanded
+            self.ensureNewBitVectorFits(self.newBitVectorIndex + 1)
+            #Sets word in correct spot in newBitVector
+            self.newBitVector[self.newBitVectorIndex] += word
+            #Iterates the index to the new spot
+            self.newBitVectorIndex += 1
+        
         
     def xor(self,other):
         
@@ -129,7 +137,7 @@ class bitVector:
         #Sets activeWordIndex to zero for both self and other
         self.activeWordIndex = 0
         other.activeWordIndex = 0
-        for i in range(len(other.storage)):
+        for i in range(len(self.storage)):
             
             #checks for cases
             selfCheck = self.storage[self.activeWordIndex] >> np.uint64(63)
