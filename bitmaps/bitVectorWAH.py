@@ -49,7 +49,7 @@ class bitVector:
         if self.storage.size < newLenInWords:
             # TODO: In the future, this should do something a bit more efficient, like growing in blocks of size 1.5*current length or something like that.
             self.storage.resize(newLenInWords)
-        
+    def ensureNewBitVectorFits(self,newLenInWords):    
         if self.newBitVector.size < newLenInWords:
             self.newBitVector.resize(newLenInWords)
     
@@ -90,14 +90,38 @@ class bitVector:
                 self.activeWordIndex += 1
                 self.numWords += 1
                    
-    #def appendRun(runType,length):
+    def appendRun(self,runType,length):
         
+        word = np.uint64(1) << np.uint64(63)
+        word += np.uint64(runType) << np.uint64(62)
+        word += length
+        
+        self.newBitVector[self.newBitVectorIndex] = word
+        
+        self.ensureNewBitVectorFits(self.newBitVectorIndex + 1)
+        
+        self.newBitVectorIndex += 1
       
     def appendWord(self,word):
         #appends a word to a new bitVector based on logical operations
         #Will also check if word is a run
     
-        
+        #Case 1: word is literal
+        if word >> np.uint64(63) == 0:
+            #Sets word in correct spot in newBitVector
+            self.newBitVector[self.newBitVectorIndex] = word
+            #CHecks if newBitVector needs to be expanded
+            self.ensureNewBitVectorFits(self.newBitVectorIndex + 1)
+            #Iterates the index to the new spot
+            self.newBitVectorIndex += 1
+        #Case 2: word is run
+        else:
+            runType = (word >> np.uint64(62)) & np.uint64(1)
+            getLength = np.uint64(1) << np.uint(63)
+            getLength += np.uint64(1) << np.uint64(62)
+            length = word & ~(getLength)
+            
+            self.appendRun(runType,length)
         
     def xor(self,other):
         
@@ -117,7 +141,7 @@ class bitVector:
                 self.appendWord(newWrd)
                 #FIXME: ensureFits needs to be fixed to account for newBitVector
                 #Checks if storage needs expanded
-                self.ensureStorageFits(self.numNewWords + 1)
+                self.ensureNewBitVectorFits(self.numNewWords + 1)
         
             self.activeWordIndex += 1
             other.activeWordIndex += 1
