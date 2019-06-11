@@ -49,6 +49,9 @@ class bitVector:
         if self.storage.size < newLenInWords:
             # TODO: In the future, this should do something a bit more efficient, like growing in blocks of size 1.5*current length or something like that.
             self.storage.resize(newLenInWords)
+        
+        if self.newBitVector.size < newLenInWords:
+            self.newBitVector.resize(newLenInWords)
     
     def append(self,bit):
         self.numRows += 1
@@ -90,13 +93,11 @@ class bitVector:
     #def appendRun(runType,length):
         
       
-    #def appendWord(self,word):
+    def appendWord(self,word):
         #appends a word to a new bitVector based on logical operations
         #Will also check if word is a run
     
-        #Case 1: Word was a literal AND NOT previous word == current word (AND if previous fill not equal to word)?
         
-            
         
     def xor(self,other):
         
@@ -114,6 +115,7 @@ class bitVector:
             if selfCheck == otherCheck and selfCheck == 0:
                 newWrd = self.storage[self.activeWordIndex] ^ other.storage[other.activeWordIndex]
                 self.appendWord(newWrd)
+                #FIXME: ensureFits needs to be fixed to account for newBitVector
                 #Checks if storage needs expanded
                 self.ensureStorageFits(self.numNewWords + 1)
         
@@ -121,7 +123,6 @@ class bitVector:
             other.activeWordIndex += 1
             print self.newBitVector
         
-    #def get():
         
      
             
