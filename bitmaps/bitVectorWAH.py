@@ -52,48 +52,30 @@ class bitVector:
         
         self.partialLiteralLength += 1
         
-        
-        #check if empty word or literal:
-        if self.storage[self.activeWordIndex] == 0 or ~(self.storage[self.activeWordIndex]) | (np.uint64(1) << self.wordSizeInBits) == 0:
-            
-            
-                #Check if previous word is fill of zeros
-                if self.storage[self.activeWordIndex - 1] >> np.uint64(62) == (2 << 63):
-                    self.storage[self.activeWordIndex - 1] += 1
-                    self.fillLength += 1
-                    self.partialLiteralLength = 0
-                else:
-                    #Make new fill
-                    self.storage[self.activeWordIndex] &= ~(self.storage[self.activeWordIndex])
-                    self.fillLength = 1
-                    self.storage[self.activeWordIndex] += 1
-                    self.partialLiteralLength = 0
-                        
-                # Not done:
-                # style recommendation a = np.uint64(-1) & ~(np.uint64(1) << np.uint64(63))
-            
-                #Check if previous word is fill of ones
-                if self.storage[self.activeWordIndex - 1] >> np.uint64(62) == (3 << 63):
-                    self.storage[self.activeWordIndex - 1] += 1
-                    self.fillLength += 1
-                    self.partialLiteralLength = 0
-        
-                else:
-                    #Make new fill
-                    self.storage[self.activeWordIndex] &= ~(self.storage[self.activeWordIndex])
-                    self.fillLength = 1
-                    self.storage[self.activeWordIndex] += 1
-                    self.partialLiteralLength = 0
-                    
-        
         # Done:
-        print 'Checking if we need to merge this back into the previous word.' 
         # Grow the storage and move the active word if needed.
         if self.partialLiteralLength == self.wordSizeInBits - 1:
-            self.ensureStorageFits(self.numWords + 1)
-            self.partialLiteralLength = 0
-            self.activeWordIndex += 1
-            self.numWords += 1
+            print 'Checking if we need to merge this back into the previous word.' 
+
+            #check for merge back
+            if self.storage[self.activeWordIndex] == 0 or ~(self.storage[self.activeWordIndex] | np.uint64(1) << np.uint64(self.wordSizeInBits - 1)) == 0:
+                #Sets active word to fill of type bit and size one
+                self.storage[self.activeWordIndex] = np.uint64(1)<<(np.uint64(self.wordSizeInBits - 1)) | (np.uint64(bit) << (np.uint64(self.wordSizeInBits - 2))) | np.uint64(1)
+                # Not done:
+                #FIXME: need to check overflow
+                if self.activeWordIndex > 0 and self.storage[self.activeWordIndex - 1] >> np.uint64(62) == self.storage[self.activeWordIndex] >> np.uint64(62):
+                    self.storage[self.activeWordIndex - 1] += np.uint64(1)
+                    self.storage[self.activeWordIndex] = np.uint64(0)
+                    self.partialLiteralLength = 0
+                else:
+                    self.ensureStorageFits(self.numWords + 1)
+                    self.partialLiteralLength = 0
+                    self.activeWordIndex += 1
+                    self.numWords += 1
+           
+                    
+        
+        
         
     #def xor():
         
