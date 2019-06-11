@@ -77,7 +77,8 @@ class bitVector:
         
         
         
-    #def xor():
+    #def xor(self,other):
+        
         
         
         
