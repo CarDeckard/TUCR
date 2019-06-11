@@ -79,25 +79,22 @@ class bitVector:
                     self.partialLiteralLength = 0
                     self.activeWordIndex += 1
                     self.numWords += 1
-            #Checks if not fill and needs to be expanded        
-            self.ensureStorageFits(self.numWords + 1)
-            self.partialLiteralLength = 0
-            self.activeWordIndex += 1
-            self.numWords += 1
+            #Checks if not fill and needs to be expanded    
+            if self.storage[self.activeWordIndex - 1] >> np.uint64(63) == 0b0:
+                print 'Hey booboo'
+                self.ensureStorageFits(self.numWords + 1)
+                self.partialLiteralLength = 0
+                self.activeWordIndex += 1
+                self.numWords += 1
                    
     #def appendRun(runType,length):
+        
       
-    def appendWord(self,word):
+    #def appendWord(self,word):
         #appends a word to a new bitVector based on logical operations
         #Will also check if word is a run
     
-        #Word was a literal
-        if word >> np.uint64(63) == 0:
-            #Puts word in spot
-            self.newBitVector[self.newBitVectorIndex] = word
-            
-        #Word was a run
-        #else:
+        #Case 1: Word was a literal AND NOT previous word == current word (AND if previous fill not equal to word)?
         
             
         
