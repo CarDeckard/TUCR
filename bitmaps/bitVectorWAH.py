@@ -237,9 +237,9 @@ class bitVector:
                     self.activeWordIndex += 1
             
         
+        self.storage = self.newBitVector
 
     def Or(self, other):
-        self.storage = self.newBitVector
 
         
         #sets activeWordIndex to zero for both self and other
