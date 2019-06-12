@@ -30,7 +30,7 @@ class bitVector:
         self.appendWordIndex = 0 # Location of the last word in the bitvector. The append function will *only* work with this index.
         
         
-    def 
+    #def 
     
     def isLiteral(self,word):
         return word >> self.wordSizeInBits - np.uint64(1) == 0
