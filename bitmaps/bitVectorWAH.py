@@ -133,6 +133,9 @@ class bitVector:
         
     def xor(self,other):
         
+        if self.numRows != other.numRows:
+            print 'Vectors are not the same size. Error.'
+            return
         
         #Sets activeWordIndex to zero for both self and other
         self.activeWordIndex = 0
