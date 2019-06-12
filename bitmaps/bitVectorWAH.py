@@ -239,6 +239,124 @@ class bitVector:
         
         self.storage = self.newBitVector
 
+    def AND(self, other):
+        self.activeWordIndex = 0
+        other.activeWordIndex = 0
+
+        
+        if len(other.storage) > len(self.storage):
+            maxlen = len(other.storage)
+        else:
+            maxlen = len(self.storage)
+        
+        for i in range(maxlen):
+            
+            #find the most significant bit to see if Fill or Literal
+            msbSelf = self.storage[self.activeWordIndex] >> 63
+            msbOther = other.storage[other.activeWordIndex] >> 63
+            
+            #If either are fill words enter here
+            if msbSelf == 1 or msbOther == 1:
+                
+                #If both are Fill Words
+                if msbSelf == 1 and msbOther == 1:
+                    
+                    #Use a mask to find if we have a run of 1's or 0's
+                    #If nonzero we have a run of 1's
+                    runSelf = self.storage[self.activeWordIndex] & np.uint64(4611686018427387904)
+                    runOther = other.storage[other.activeWordIndex] & np.uint64(4611686018427387904)
+                
+                    #Use a mask to find the length of our runs
+                    lenSelf = self.storage[self.activeWordIndex] & np.uint64(4611686018427387903)
+                    lenOther = other.storage[other.activeWordIndex] & np.uint64(4611686018427387903)
+                    
+                    #If they are both runs of 1's set NewBitVector to a run of 1's
+                    if runSelf != 0 and runOther != 0:
+                        self.appendWord(np.uint64(13835058055282163713))
+                    #If one of them is 0's then set NewBitVector to run of 0's
+                    else:
+                        self.appendWord(np.uint64(9223372036854775809))
+                        
+                        
+                    #Iterate the active word index only if the run is done
+                    if (lenSelf - 1) == 0:
+                        self.activeWordIndex += 1
+                    else:
+                        self.storage[self.activeWordIndex] -= np.uint64(1)
+                    if (lenOther - 1) == 0:
+                        other.activeWordIndex += 1
+                    else:
+                        other.storage[other.activeWordIndex] -= np.uint64(1)
+                        
+                    
+                #If Self is a Fill word and Other is a Literal
+                elif msbSelf == 1:
+                    
+                    #Use a mask to find if we have a run of 1's or 0's
+                    #If nonzero we have a run of 1's
+                    runSelf = self.storage[self.activeWordIndex] & np.uint64(4611686018427387904)
+                
+                    #Use a mask to find the length of our runs
+                    lenSelf = self.storage[self.activeWordIndex] & np.uint64(4611686018427387903)
+                    
+                    if runSelf == 1:
+                        
+                        #if we have a run of 1's than just append other to NewBitVector
+                        self.appendWord(other.storage[other.activeWordIndex])
+                        
+                    else:
+                        
+                        #if we have a run of 0's than just append 0's to NewBitVector
+                        self.appendWord(0)
+                        
+                    #Iterate Self Index if run is finished
+                    if (lenSelf - 1) == 0:
+                        self.activeWordIndex += 1
+                    else:
+                        self.storage[self.activeWordIndex] -= np.uint64(1)
+                        
+                    other.activeWordIndex += 1
+                        
+                #If Other is a Fill word and Self is a Literal
+                else:
+                    #Use a mask to find if we have a run of 1's or 0's
+                    #If nonzero we have a run of 1's
+                    runOther = other.storage[other.activeWordIndex] & np.uint64(4611686018427387904)
+                
+                    #Use a mask to find the length of our runs
+                    lenOther = other.storage[other.activeWordIndex] & np.uint64(4611686018427387903)
+                    
+                    if runOther == 1:
+                        
+                        #if we have a run of 1's than just append other to NewBitVector
+                        self.appendWord(self.storage[self.activeWordIndex])
+                        
+                    else:
+                        
+                        #if we have a run of 0's than just append 0's to NewBitVector
+                        self.appendWord(0)
+                        
+                    #Iterate Self Index if run is finished
+                    if (lenOther - 1) == 0:
+                        other.activeWordIndex += 1
+                    else:
+                        other.storage[other.activeWordIndex] -= np.uint64(1)
+                        
+                    self.activeWordIndex += 1
+                
+            #If both are Literal enter here
+            else:
+                newBV = self.storage[self.activeWordIndex] & other.storage[other.activeWordIndex]
+                self.appendWord(np.uint64(newBV))
+                
+                #Iterate the Index values
+                self.activeWordIndex += 1
+                other.activeWordIndex += 1
+        
+        #rewrite storage as the new vector of self AND other
+        self.storage = self.NewBitVector
+
+
     def Or(self, other):
 
         
@@ -285,4 +403,3 @@ class bitVector:
 
 c = bitVector()
 d = bitVector()
-
