@@ -123,8 +123,7 @@ class bitVector:
             
             self.appendRun(runType,length)
         
-    def xor(self,other):
-        
+    def xor(self, other):
         
         #Sets activeWordIndex to zero for both self and other
         self.activeWordIndex = 0
@@ -147,8 +146,43 @@ class bitVector:
             other.activeWordIndex += 1
             print self.newBitVector
         
+    def Or(self, other):
         
-     
+        #sets activeWordIndex to zero for both self and other
+        self.activeWordIndex = 0
+        other.activeWordIndex = 0
+        for i in range(len(other.storage)):
+            
+            #Determines whether the word is a literal or a run
+            selfCheck = self.storage[self.activeWordIndex] >> np.uint64(63)
+            otherCheck = other.storage[other.activeWordIndex] >> np.uint64(63)
+            
+            #Case 1: Both are literals
+            if selfCheck == otherCheck and selfCheck == 0:
+                newWrd = self.storage[self.activeWordIndex] | other.storage[other.activeWordIndex]
+                self.appendWord(newWrd)
+                self.ensureNewBitVectorFits(self.numNewWords + 1)
+                
+            #Case 2: One is a literal, one is a run
+            if selfCheck != otherCheck:
+                #Gets word count for
+                if selfCheck == 1:
+                    runCountBitVector = bitVector()
+                    runCountBitVector.append(0)
+                    runCountBitVector.append(0)
+                    for n in range(62):
+                        runCountBitVector.append(1)
+                    
+            #Case 3: Both are runs
+            if selfCheck == otherCheck and otherCheck == 1:
+                newWrd = self.storage[self.activeWordIndex] | other.storage[other.activeWordIndex]
+                self.appendWord(newWrd)
+                self.ensureNewBitVectorFits(self.newWords + 1)
+            
+            #Increment activeWordIndex and print the OR'ed word
+            self.activeWordIndex += 1
+            other.activeWordIndex += 1
+            print self.newWrd
             
     def printBitVector(self):
         for i in self.storage:
