@@ -282,7 +282,7 @@ class bitVector:
         for i in self.storage:
             print np.binary_repr(i, width = 64)
     
-
+#Creates two bitVectors called c and d
 c = bitVector()
 d = bitVector()
 
