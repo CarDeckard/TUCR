@@ -241,11 +241,15 @@ class bitVector:
 
     def Or(self, other):
 
+        #Checks that vectors are the same size
+        if self.numRows != other.numRows:
+            print "Error: Vectors are of unequal size"
+            return
         
         #sets activeWordIndex to zero for both self and other
         self.activeWordIndex = 0
         other.activeWordIndex = 0
-        for i in range(len(other.storage)):
+        for i in range(len(self.storage)):
             
             #Determines whether the word is a literal or a run
             selfCheck = self.storage[self.activeWordIndex] >> np.uint64(63)
@@ -254,8 +258,11 @@ class bitVector:
             #Case 1: Both are literals
             if selfCheck == otherCheck and selfCheck == 0:
                 newWrd = self.storage[self.activeWordIndex] | other.storage[other.activeWordIndex]
+                newWrd &= ~(np.uint64(1) << np.uint64(63))
                 self.appendWord(newWrd)
-                self.ensureNewBitVectorFits(self.numNewWords + 1)
+                
+                self.activeWordIndex += 1
+                other.activeWordIndex += 1
                 
             #Case 2: One is a literal, one is a run
             if selfCheck != otherCheck:
@@ -273,9 +280,7 @@ class bitVector:
                 self.appendWord(newWrd)
                 self.ensureNewBitVectorFits(self.newWords + 1)
             
-            #Increment activeWordIndex and print the OR'ed word
-            self.activeWordIndex += 1
-            other.activeWordIndex += 1
+            #Print the OR'ed word
             print self.newWrd
             
     def printBitVector(self):
