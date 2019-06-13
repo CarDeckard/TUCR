@@ -64,28 +64,33 @@ class bitVector:
         
         # Done:
         # Grow the storage and move the active word if needed.
-        if self.partialLiteralLength == self.wordSizeInBits - 1:
-            print 'Checking if we need to merge this back into the previous word.' 
+        if self.partialLiteralLength == (self.wordSizeInBits - 1):
 
-            #check for merge back
+            #check for merge back. Note that active word is always a literal.
             if self.storage[self.activeWordIndex] == 0 or ~(self.storage[self.activeWordIndex] | np.uint64(1) << np.uint64(self.wordSizeInBits - 1)) == 0:
+                print 'Found a run. Checking if we need to merge this back into the previous word.'
                 #Sets active word to fill of type bit and size one
                 self.storage[self.activeWordIndex] = np.uint64(1)<<(np.uint64(self.wordSizeInBits - 1)) | (np.uint64(bit) << (np.uint64(self.wordSizeInBits - 2))) | np.uint64(1)
+                
                 # Not done:
-                #FIXME: need to check overflow
+                #FIXME: need to check overflow for size of run
+                
+                # Do the merge if last word is the right type
                 if self.activeWordIndex > 0 and self.storage[self.activeWordIndex - 1] >> np.uint64(62) == self.storage[self.activeWordIndex] >> np.uint64(62):
                     self.storage[self.activeWordIndex - 1] += np.uint64(1)
                     self.storage[self.activeWordIndex] = np.uint64(0)
                     self.partialLiteralLength = 0
+                
+                # Don't do the merge if the last word is the wrong type.
                 else:
                     self.ensureStorageFits(self.numWords + 1)
                     self.partialLiteralLength = 0
                     self.activeWordIndex += 1
                     self.numWords += 1
-                return
-            #Checks if not fill and needs to be expanded    
-            if self.storage[self.activeWordIndex - 1] >> np.uint64(63) == 0b0:
-                print 'Hey booboo'
+                
+            #Checks if not fill and needs to be expanded
+            else:
+                #print 'Hey booboo'
                 self.ensureStorageFits(self.numWords + 1)
                 self.partialLiteralLength = 0
                 self.activeWordIndex += 1
@@ -240,8 +245,8 @@ class bitVector:
         self.storage = self.newBitVector
 
     def AND(self, other):
-        self.activeWordIndex = 0
-        other.activeWordIndex = 0
+        self.activeWordIndex = np.uint64(0)
+        other.activeWordIndex = np.uint64(0)
 
         
         if len(other.storage) > len(self.storage):
@@ -252,8 +257,8 @@ class bitVector:
         for i in range(maxlen):
             
             #find the most significant bit to see if Fill or Literal
-            msbSelf = self.storage[self.activeWordIndex] >> 63
-            msbOther = other.storage[other.activeWordIndex] >> 63
+            msbSelf = self.storage[self.activeWordIndex] >> np.uint64(63)
+            msbOther = other.storage[other.activeWordIndex] >> np.uint64(63)
             
             #If either are fill words enter here
             if msbSelf == 1 or msbOther == 1:
@@ -279,11 +284,11 @@ class bitVector:
                         
                         
                     #Iterate the active word index only if the run is done
-                    if (lenSelf - 1) == 0:
+                    if lenSelf == 1:
                         self.activeWordIndex += 1
                     else:
                         self.storage[self.activeWordIndex] -= np.uint64(1)
-                    if (lenOther - 1) == 0:
+                    if lenOther == 1:
                         other.activeWordIndex += 1
                     else:
                         other.storage[other.activeWordIndex] -= np.uint64(1)
@@ -310,7 +315,7 @@ class bitVector:
                         self.appendWord(0)
                         
                     #Iterate Self Index if run is finished
-                    if (lenSelf - 1) == 0:
+                    if lenSelf == 1:
                         self.activeWordIndex += 1
                     else:
                         self.storage[self.activeWordIndex] -= np.uint64(1)
