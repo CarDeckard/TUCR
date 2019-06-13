@@ -52,45 +52,7 @@ class bitVector:
     def ensureNewBitVectorFits(self,newLenInWords):    
         if self.newBitVector.size < newLenInWords:
             self.newBitVector.resize(newLenInWords)
-    
-    def append(self,bit):
-        self.numRows += 1
-        
-                   
-        #adds the bit to the literal in the last space            
-        self.setBitInActiveWord(self.partialLiteralLength,bit)
-        
-        self.partialLiteralLength += 1
-        
-        # Done:
-        # Grow the storage and move the active word if needed.
-        if self.partialLiteralLength == self.wordSizeInBits - 1:
-            print 'Checking if we need to merge this back into the previous word.' 
-
-            #check for merge back
-            if self.storage[self.activeWordIndex] == 0 or ~(self.storage[self.activeWordIndex] | np.uint64(1) << np.uint64(self.wordSizeInBits - 1)) == 0:
-                #Sets active word to fill of type bit and size one
-                self.storage[self.activeWordIndex] = np.uint64(1)<<(np.uint64(self.wordSizeInBits - 1)) | (np.uint64(bit) << (np.uint64(self.wordSizeInBits - 2))) | np.uint64(1)
-                # Not done:
-                #FIXME: need to check overflow
-                if self.activeWordIndex > 0 and self.storage[self.activeWordIndex - 1] >> np.uint64(62) == self.storage[self.activeWordIndex] >> np.uint64(62):
-                    self.storage[self.activeWordIndex - 1] += np.uint64(1)
-                    self.storage[self.activeWordIndex] = np.uint64(0)
-                    self.partialLiteralLength = 0
-                else:
-                    self.ensureStorageFits(self.numWords + 1)
-                    self.partialLiteralLength = 0
-                    self.activeWordIndex += 1
-                    self.numWords += 1
-                return
-            #Checks if not fill and needs to be expanded    
-            if self.storage[self.activeWordIndex - 1] >> np.uint64(63) == 0b0:
-                print 'Hey booboo'
-                self.ensureStorageFits(self.numWords + 1)
-                self.partialLiteralLength = 0
-                self.activeWordIndex += 1
-                self.numWords += 1
-                   
+                       
     def appendRun(self,runType,length):
         
         word = np.uint64(1) << np.uint64(63)
@@ -311,8 +273,168 @@ class bitVector:
     def printBitVector(self):
         for i in self.storage:
             print np.binary_repr(i, width = 64)
-    
+            
+    def append(self,bit):
+        self.numRows += 1
+        
+                   
+        #adds the bit to the literal in the last space            
+        self.setBitInActiveWord(self.partialLiteralLength,bit)
+        
+        self.partialLiteralLength += 1
+        
+        # Done:
+        # Grow the storage and move the active word if needed.
+        if self.partialLiteralLength == (self.wordSizeInBits - 1):
+
+            #check for merge back. Note that active word is always a literal.
+            if self.storage[self.activeWordIndex] == 0 or ~(self.storage[self.activeWordIndex] | np.uint64(1) << np.uint64(self.wordSizeInBits - 1)) == 0:
+                print 'Found a run. Checking if we need to merge this back into the previous word.'
+                #Sets active word to fill of type bit and size one
+                self.storage[self.activeWordIndex] = np.uint64(1)<<(np.uint64(self.wordSizeInBits - 1)) | (np.uint64(bit) << (np.uint64(self.wordSizeInBits - 2))) | np.uint64(1)
+                
+                # Not done:
+                #FIXME: need to check overflow for size of run
+                
+                # Do the merge if last word is the right type
+                if self.activeWordIndex > 0 and self.storage[self.activeWordIndex - 1] >> np.uint64(62) == self.storage[self.activeWordIndex] >> np.uint64(62):
+                    self.storage[self.activeWordIndex - 1] += np.uint64(1)
+                    self.storage[self.activeWordIndex] = np.uint64(0)
+                    self.partialLiteralLength = 0
+                
+                # Don't do the merge if the last word is the wrong type.
+                else:
+                    self.ensureStorageFits(self.numWords + 1)
+                    self.partialLiteralLength = 0
+                    self.activeWordIndex += 1
+                    self.numWords += 1
+                
+            #Checks if not fill and needs to be expanded
+            else:
+                #print 'Hey booboo'
+                self.ensureStorageFits(self.numWords + 1)
+                self.partialLiteralLength = 0
+                self.activeWordIndex += 1
+                self.numWords += 1
+                
+    def AND(self, other):
+        self.activeWordIndex = np.uint64(0)
+        other.activeWordIndex = np.uint64(0)
+
+        
+        if len(other.storage) > len(self.storage):
+            maxlen = len(other.storage)
+        else:
+            maxlen = len(self.storage)
+        
+        for i in range(maxlen):
+            
+            #find the most significant bit to see if Fill or Literal
+            msbSelf = self.storage[self.activeWordIndex] >> np.uint64(63)
+            msbOther = other.storage[other.activeWordIndex] >> np.uint64(63)
+            
+            #If either are fill words enter here
+            if msbSelf == 1 or msbOther == 1:
+                
+                #If both are Fill Words
+                if msbSelf == 1 and msbOther == 1:
+                    
+                    #Use a mask to find if we have a run of 1's or 0's
+                    #If nonzero we have a run of 1's
+                    runSelf = self.storage[self.activeWordIndex] & np.uint64(4611686018427387904)
+                    runOther = other.storage[other.activeWordIndex] & np.uint64(4611686018427387904)
+                
+                    #Use a mask to find the length of our runs
+                    lenSelf = self.storage[self.activeWordIndex] & np.uint64(4611686018427387903)
+                    lenOther = other.storage[other.activeWordIndex] & np.uint64(4611686018427387903)
+                    
+                    #If they are both runs of 1's set NewBitVector to a run of 1's
+                    if runSelf != 0 and runOther != 0:
+                        self.appendWord(np.uint64(13835058055282163713))
+                    #If one of them is 0's then set NewBitVector to run of 0's
+                    else:
+                        self.appendWord(np.uint64(9223372036854775809))
+                        
+                        
+                    #Iterate the active word index only if the run is done
+                    if lenSelf == 1:
+                        self.activeWordIndex += 1
+                    else:
+                        self.storage[self.activeWordIndex] -= np.uint64(1)
+                    if lenOther == 1:
+                        other.activeWordIndex += 1
+                    else:
+                        other.storage[other.activeWordIndex] -= np.uint64(1)
+                        
+                    
+                #If Self is a Fill word and Other is a Literal
+                elif msbSelf == 1:
+                    
+                    #Use a mask to find if we have a run of 1's or 0's
+                    #If nonzero we have a run of 1's
+                    runSelf = self.storage[self.activeWordIndex] & np.uint64(4611686018427387904)
+                
+                    #Use a mask to find the length of our runs
+                    lenSelf = self.storage[self.activeWordIndex] & np.uint64(4611686018427387903)
+                    
+                    if runSelf == 1:
+                        
+                        #if we have a run of 1's than just append other to NewBitVector
+                        self.appendWord(other.storage[other.activeWordIndex])
+                        
+                    else:
+                        
+                        #if we have a run of 0's than just append 0's to NewBitVector
+                        self.appendWord(0)
+                        
+                    #Iterate Self Index if run is finished
+                    if lenSelf == 1:
+                        self.activeWordIndex += 1
+                    else:
+                        self.storage[self.activeWordIndex] -= np.uint64(1)
+                        
+                    other.activeWordIndex += 1
+                        
+                #If Other is a Fill word and Self is a Literal
+                else:
+                    #Use a mask to find if we have a run of 1's or 0's
+                    #If nonzero we have a run of 1's
+                    runOther = other.storage[other.activeWordIndex] & np.uint64(4611686018427387904)
+                
+                    #Use a mask to find the length of our runs
+                    lenOther = other.storage[other.activeWordIndex] & np.uint64(4611686018427387903)
+                    
+                    if runOther == 1:
+                        
+                        #if we have a run of 1's than just append other to NewBitVector
+                        self.appendWord(self.storage[self.activeWordIndex])
+                        
+                    else:
+                        
+                        #if we have a run of 0's than just append 0's to NewBitVector
+                        self.appendWord(0)
+                        
+                    #Iterate Self Index if run is finished
+                    if (lenOther - 1) == 0:
+                        other.activeWordIndex += 1
+                    else:
+                        other.storage[other.activeWordIndex] -= np.uint64(1)
+                        
+                    self.activeWordIndex += 1
+                
+            #If both are Literal enter here
+            else:
+                newBV = self.storage[self.activeWordIndex] & other.storage[other.activeWordIndex]
+                self.appendWord(np.uint64(newBV))
+                
+                #Iterate the Index values
+                self.activeWordIndex += 1
+                other.activeWordIndex += 1
+        
+        #rewrite storage as the new vector of self AND other
+        self.storage = self.NewBitVector
+
+
 
 c = bitVector()
 d = bitVector()
-
