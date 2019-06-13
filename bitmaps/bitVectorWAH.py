@@ -286,20 +286,27 @@ class bitVector:
                 selfRunType = (self.storage[self.activeWordIndex] >> np.uint64(62)) & np.uint64(1)
                 otherRunType = (other.storage[other.activeWordIndex] >> np.uint64(62)) & np.uint64(1)
                     
+                if selfRunType or otherRunType == 1:
+                    self.appendRun(1, totalLength)
+                if selfRunType and otherRunType == 0:
+                    self.appendRun(0, totalLength)
+                    
+                    
+                if selfLength > otherLength:
+                    other.activeWordIndex += 1
+                if selfLength < otherLength:
+                    self.activeWordIndex += 1
+                else: 
+                    self.activeWordIndex += 1
+                    other.activeWordIndex += 1
                 
-                
-                newWrd = self.storage[self.activeWordIndex] | other.storage[other.activeWordIndex]
-                self.appendWord(newWrd)
-                self.ensureNewBitVectorFits(self.newWords + 1)
             
             #Case 3: One is a literal, one is a run
             if selfCheck != otherCheck:
-                #Gets word count for
+                
                 if selfCheck == 1:
                     
-                    
-            #Print the OR'ed word
-            print self.newWrd
+        self.storage = self.newBitVector
             
     def printBitVector(self):
         for i in self.storage:
