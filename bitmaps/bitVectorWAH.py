@@ -27,13 +27,10 @@ class bitVector:
         # Another literal is always added if the active word gets full.
         self.activeWordIndex = 0 # this is the index of the active word
         
-        #New Vector Storage Variables
-        self.newBitVector = np.zeros(1,dtype=np.uint64)
+        self.appendWordIndex = 0 # Location of the last word in the bitvector. The append function will *only* work with this index.
         
-        self.newBitVectorIndex = 0
         
-        self.numNewWords = 0
-        
+    def 
     
     def isLiteral(self,word):
         return word >> self.wordSizeInBits - np.uint64(1) == 0
@@ -70,6 +67,7 @@ class bitVector:
             
             self.newBitVectorIndex += 1
       
+        
     def appendWord(self,word):
         #appends a word to a new bitVector based on logical operations
         #Will also check if word is a run
@@ -202,6 +200,8 @@ class bitVector:
         self.storage = self.newBitVector
 
     def Or(self, other):
+        
+        newBitVector = bitVector()
 
         #Checks that vectors are the same size
         if self.numRows != other.numRows:
@@ -271,7 +271,7 @@ class bitVector:
                     #Determines whether run is of 1's or 0's
                     selfRunType = (self.storage[self.activeWordIndex] >> np.uint64(62)) & np.uint64(1)
                     
-        self.storage = self.newBitVector
+        print newBitVector
             
     def printBitVector(self):
         for i in self.storage:
@@ -291,25 +291,25 @@ class bitVector:
         if self.partialLiteralLength == (self.wordSizeInBits - 1):
 
             #check for merge back. Note that active word is always a literal.
-            if self.storage[self.activeWordIndex] == 0 or ~(self.storage[self.activeWordIndex] | np.uint64(1) << np.uint64(self.wordSizeInBits - 1)) == 0:
+            if self.storage[self.appendWordIndex] == 0 or ~(self.storage[self.appendWordIndex] | np.uint64(1) << np.uint64(self.wordSizeInBits - 1)) == 0:
                 print 'Found a run. Checking if we need to merge this back into the previous word.'
                 #Sets active word to fill of type bit and size one
-                self.storage[self.activeWordIndex] = np.uint64(1)<<(np.uint64(self.wordSizeInBits - 1)) | (np.uint64(bit) << (np.uint64(self.wordSizeInBits - 2))) | np.uint64(1)
+                self.storage[self.appendWordIndex] = np.uint64(1)<<(np.uint64(self.wordSizeInBits - 1)) | (np.uint64(bit) << (np.uint64(self.wordSizeInBits - 2))) | np.uint64(1)
                 
                 # Not done:
                 #FIXME: need to check overflow for size of run
                 
                 # Do the merge if last word is the right type
-                if self.activeWordIndex > 0 and self.storage[self.activeWordIndex - 1] >> np.uint64(62) == self.storage[self.activeWordIndex] >> np.uint64(62):
-                    self.storage[self.activeWordIndex - 1] += np.uint64(1)
-                    self.storage[self.activeWordIndex] = np.uint64(0)
+                if self.appendWordIndex > 0 and self.storage[self.appendWordIndex - 1] >> np.uint64(62) == self.storage[self.appendWordIndex] >> np.uint64(62):
+                    self.storage[self.appendWordIndex - 1] += np.uint64(1)
+                    self.storage[self.appendWordIndex] = np.uint64(0)
                     self.partialLiteralLength = 0
                 
                 # Don't do the merge if the last word is the wrong type.
                 else:
                     self.ensureStorageFits(self.numWords + 1)
                     self.partialLiteralLength = 0
-                    self.activeWordIndex += 1
+                    self.appendWordIndex += 1
                     self.numWords += 1
                 
             #Checks if not fill and needs to be expanded
@@ -317,7 +317,7 @@ class bitVector:
                 #print 'Hey booboo'
                 self.ensureStorageFits(self.numWords + 1)
                 self.partialLiteralLength = 0
-                self.activeWordIndex += 1
+                self.appendWordIndex += 1
                 self.numWords += 1
                 
     def AND(self, other):
