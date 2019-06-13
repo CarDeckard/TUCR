@@ -245,6 +245,7 @@ class bitVector:
                 else:
                     totalLength = selfLength
                     
+                #Determines whether run is of 1's or 0's
                 selfRunType = (self.storage[self.activeWordIndex] >> np.uint64(62)) & np.uint64(1)
                 otherRunType = (other.storage[other.activeWordIndex] >> np.uint64(62)) & np.uint64(1)
                     
@@ -266,7 +267,9 @@ class bitVector:
             #Case 3: One is a literal, one is a run
             if selfCheck != otherCheck:
                 
-                if selfCheck == 1:
+                if selfCheck == 1 and otherCheck == 0:
+                    #Determines whether run is of 1's or 0's
+                    selfRunType = (self.storage[self.activeWordIndex] >> np.uint64(62)) & np.uint64(1)
                     
         self.storage = self.newBitVector
             
