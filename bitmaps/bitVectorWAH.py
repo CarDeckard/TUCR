@@ -344,19 +344,19 @@ class bitVector:
                     
                     #Use a mask to find if we have a run of 1's or 0's
                     #If nonzero we have a run of 1's
-                    runSelf = self.storage[self.activeWordIndex] & np.uint64(4611686018427387904)
-                    runOther = other.storage[other.activeWordIndex] & np.uint64(4611686018427387904)
+                    runSelf = self.storage[self.activeWordIndex] & np.uint64( 1 << 63 )
+                    runOther = other.storage[other.activeWordIndex] & np.uint64( 1 << 63)
                 
                     #Use a mask to find the length of our runs
-                    lenSelf = self.storage[self.activeWordIndex] & np.uint64(4611686018427387903)
-                    lenOther = other.storage[other.activeWordIndex] & np.uint64(4611686018427387903)
+                    lenSelf = self.storage[self.activeWordIndex] & np.uint64( ~( 1 << 62 ) )
+                    lenOther = other.storage[other.activeWordIndex] & np.uint64( ~( 1 << 62 ) )
                     
                     #If they are both runs of 1's set NewBitVector to a run of 1's
                     if runSelf != 0 and runOther != 0:
-                        self.appendWord(np.uint64(13835058055282163713))
+                        self.appendWord(np.uint64( ( 3 << 62 ) + 1) )
                     #If one of them is 0's then set NewBitVector to run of 0's
                     else:
-                        self.appendWord(np.uint64(9223372036854775809))
+                        self.appendWord(np.uint64( ( 1 << 63 ) + 1 ) )
                         
                         
                     #Iterate the active word index only if the run is done
@@ -375,10 +375,10 @@ class bitVector:
                     
                     #Use a mask to find if we have a run of 1's or 0's
                     #If nonzero we have a run of 1's
-                    runSelf = self.storage[self.activeWordIndex] & np.uint64(4611686018427387904)
+                    runSelf = self.storage[self.activeWordIndex] & np.uint64( 1 << 63)
                 
                     #Use a mask to find the length of our runs
-                    lenSelf = self.storage[self.activeWordIndex] & np.uint64(4611686018427387903)
+                    lenSelf = self.storage[self.activeWordIndex] & np.uint64( ~( 1 << 62 ) )
                     
                     if runSelf == 1:
                         
@@ -402,10 +402,10 @@ class bitVector:
                 else:
                     #Use a mask to find if we have a run of 1's or 0's
                     #If nonzero we have a run of 1's
-                    runOther = other.storage[other.activeWordIndex] & np.uint64(4611686018427387904)
+                    runOther = other.storage[other.activeWordIndex] & np.uint64( 1 << 63)
                 
                     #Use a mask to find the length of our runs
-                    lenOther = other.storage[other.activeWordIndex] & np.uint64(4611686018427387903)
+                    lenOther = other.storage[other.activeWordIndex] & np.uint64( ~( 1 << 62 ) )
                     
                     if runOther == 1:
                         
