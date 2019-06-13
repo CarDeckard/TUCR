@@ -226,22 +226,40 @@ class bitVector:
                 self.activeWordIndex += 1
                 other.activeWordIndex += 1
                 
-            #Case 2: One is a literal, one is a run
-            if selfCheck != otherCheck:
-                #Gets word count for
-                if selfCheck == 1:
-                    runCountBitVector = bitVector()
-                    runCountBitVector.append(0)
-                    runCountBitVector.append(0)
-                    for n in range(62):
-                        runCountBitVector.append(1)
-                    
-            #Case 3: Both are runs
+            #Case 2: Both are runs
             if selfCheck == otherCheck and otherCheck == 1:
+                
+                #Gets the number of words in the run
+                getLength = np.uint64(1) << np.uint(63)
+                getLength += np.uint64(1) << np.uint64(62)
+                selfLength = self.storage[self.activeWordIndex] & ~(getLength)
+                otherLength = other.storage[other.activeWordIndex] & ~(getLength)
+                
+                if selfLength != otherLength:
+                    if selfLength > otherLength:
+                        self.storage[self.activeWordIndex] -= otherLength
+                        totalLength = otherLength
+                    if otherLength > selfLength:
+                        other.storage[other.activeWordIndex] -= selfLength
+                        totalLength = selfLength
+                else:
+                    totalLength = selfLength
+                    
+                selfRunType = (self.storage[self.activeWordIndex] >> np.uint64(62)) & np.uint64(1)
+                otherRunType = (other.storage[other.activeWordIndex] >> np.uint64(62)) & np.uint64(1)
+                    
+                
+                
                 newWrd = self.storage[self.activeWordIndex] | other.storage[other.activeWordIndex]
                 self.appendWord(newWrd)
                 self.ensureNewBitVectorFits(self.newWords + 1)
             
+            #Case 3: One is a literal, one is a run
+            if selfCheck != otherCheck:
+                #Gets word count for
+                if selfCheck == 1:
+                    
+                    
             #Print the OR'ed word
             print self.newWrd
             
