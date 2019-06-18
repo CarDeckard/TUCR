@@ -1,7 +1,5 @@
 import numpy as np
 
-
-
 class bitVector:
 
     #######################################################################
@@ -9,7 +7,7 @@ class bitVector:
     #######################################################################
 
     def getLen(self):
-        # gets the length of the run word 
+        #gets the length of the run word 
         return (self.storage[self.activeWordIndex] & ~(np.uint64(3) << np.uint64(62)))
 
     def moveIteratorForward(self,numWords):
@@ -33,6 +31,22 @@ class bitVector:
         #goes to the first word of the BV
         self.activeWordIndex = 0
 
+    def getTotalLength(self):
+
+        totalLength = 0
+
+        for i in range(len(self.storage)):
+            runOrLiteral = self.storage[i] >> np.uint64(63)
+            if runOrLiteral == 1:
+                #Is run
+                length = self.storage[i] & ~(np.uint64(3) << np.uint64(62))
+                totalLength += length
+            else:
+                #Is literal
+                totalLength += 1
+        return totalLength
+
+
     def printBitVector(self):
         for i in self.storage:
             print np.binary_repr(i, width = 64)
@@ -42,19 +56,40 @@ class bitVector:
 
     def setBitInActiveWord(self,pos,bit):
         if bit == 0:
-            self.storage[self.activeWordIndex] &= ~(np.uint64(1)<<(np.uint64(self.wordSizeInBits - 2) - np.uint64(pos)))
+            self.storage[self.appendWordIndex] &= ~(np.uint64(1)<<(np.uint64(self.wordSizeInBits - 2) - np.uint64(pos)))
         else:
-            self.storage[self.activeWordIndex] |=  (np.uint64(1)<<(np.uint64(self.wordSizeInBits - 2) - np.uint64(pos)))
+            self.storage[self.appendWordIndex] |=  (np.uint64(1)<<(np.uint64(self.wordSizeInBits - 2) - np.uint64(pos)))
     
     # Make sure that lenInWords can fit in the current storage
     def ensureStorageFits(self, lenInWords):
         if self.storage.size < lenInWords:
             # TODO: In the future, this should do something a bit more efficient, like growing in blocks of size 1.5*current length or something like that.
-            self.storage.resize(lenInWords)
+            self.storage.resize(lenInWords)       
+
+    def appendWord(self, word):
+        #appends a word to a bitVector based on logical operations
+        #Will also check if word is a run and send it to appendRun which will add it
     
-                       
+        #Case 1: word is run
+        if word == ~(np.uint64(1) << np.uint64(63)) or word == np.uint64(0):
+            runType = (word >> np.uint64(62)) & np.uint64(1)
+            getLength = np.uint64(1) << np.uint64(63)
+            getLength += np.uint64(1) << np.uint64(62)
+            length = word & ~(getLength)
+            
+            self.appendRun(runType,length)
+            
+        #Case 2: word is literal
+        else:
+            #Checks if bitVector needs to be expanded
+            self.ensureStorageFits(self.activeWordIndex + 1)
+            #Sets word in correct spot in bitVector
+            self.storage[self.activeWordIndex] += word
+            #Iterates the index to the new spot
+            self.activeWordIndex += 1
+
     def appendRun(self, runType, length):
-        
+    
         word = np.uint64(1) << np.uint64(63)
         word += np.uint64(runType) << np.uint64(62)
         word += length
@@ -67,43 +102,19 @@ class bitVector:
                 #Adds one to the length 
                 self.storage[self.activeWordIndex - 1] += length
             #If run becomes too large it will create an new run in the next spot in storage
-            self.ensureStorageFits(new.activeWordIndex + 1)
+            self.ensureStorageFits(self.activeWordIndex + 1)
             newRun = np.uint64(1) << np.uint64(63)
             newRun += np.uint64(runType) << np.uint64(62)
             newRun += 1
             self.storage[self.activeWordIndex] = newRun
             
         else:
-            self.ensureStorageFits(new.activeWordIndex + 1)        
+            self.ensureStorageFits(self.activeWordIndex + 1)        
             
-            self.storage[new.activeWordIndex] = word
+            self.storage[self.activeWordIndex] = word
             
             self.activeWordIndex += 1
-      
-        
-    def appendWord(self, word):
-        #appends a word to a bitVector based on logical operations
-        #Will also check if word is a run and send it to appendRun which will add it
     
-        #Case 1: word is run
-        if word == ~(np.uint64(1) << np.uint64(63)) or word == np.uint64(0):
-            runType = (word >> np.uint64(62)) & np.uint64(1)
-            getLength = np.uint64(1) << np.uint(63)
-            getLength += np.uint64(1) << np.uint64(62)
-            length = word & ~(getLength)
-            
-            self.appendRun(runType,length)
-            
-        #Case 2: word is literal
-        else:
-            #Checks if bitVector needs to be expanded
-            self.ensureStorageFits(new.activeWordIndex + 1)
-            #Sets word in correct spot in bitVector
-            self.storage[self.activeWordIndex] += word
-            #Iterates the index to the new spot
-            self.activeWordIndex += 1
-
-
     #######################################################################
     #                           Methods                                   #
     #######################################################################
@@ -111,7 +122,7 @@ class bitVector:
     def __init__(self):
 
         #Creates bitVector
-        self.storage = np.zeros(1,dtype=uint64)
+        self.storage = np.zeros(1,dtype = np.uint64)
         #Sets wordSize
         self.wordSizeInBits = np.uint64(64)
         
@@ -130,7 +141,12 @@ class bitVector:
         # Another literal is always added if the active word gets full.
         self.activeWordIndex = 0 # this is the index of the active word
 
-        self.lenRemaining = 0 # this will help to keep track of the runs
+        #lenRemaining is the lenght of the fill word
+        #it is set to 0 if the word it literal
+        if (self.storage[self.activeWordIndex] >> 63) == 1:
+            self.lenRemaining = self.getLen()
+        else:
+            self.lenRemaining = 0
         
         self.appendWordIndex = 0 # Location of the last word in the bitvector. The append function will *only* work with this index.
     
@@ -180,9 +196,9 @@ class bitVector:
     def xor(self, other):
 
         #Checks if Bit Vectors are same size (throws error if not)
-        if len(self.storage) != len(other.storage):
-            print "Bit Vectors are not the same size. Error."
-            break
+        if self.getTotalLength() != other.getTotalLength():
+            print "Not Same Size. Error."
+            return
         
         #Sets activeWordIndex to zero for both self and other
         self.activeWordIndex = 0
@@ -190,9 +206,10 @@ class bitVector:
 
         #Creates new bitVector to hold xor operation
         new = bitVector()
+        totalLength = self.getTotalLength()
         
         #FIXME: Not sure how to iterate this 
-        for i in range(len(self.storage)):
+        while totalLength > 0:
             
             #checks for cases
             selfCheck = self.storage[self.activeWordIndex] >> np.uint64(63)
@@ -203,6 +220,9 @@ class bitVector:
                 newWrd = self.storage[self.activeWordIndex] ^ other.storage[other.activeWordIndex]
                 newWrd &= ~(np.uint64(1) << np.uint64(63))
                 new.appendWord(newWrd)
+
+                self.totalLength -= 1
+                other.totalLength -= 1
                 
                 self.moveIteratorForward(1)
                 other.moveIteratorForward(1)
@@ -210,39 +230,28 @@ class bitVector:
             #Case 2: Both are fills
             if selfCheck == otherCheck and selfCheck == 1:
                 
-                getLength = np.uint64(1) << np.uint(63)
+                getLength = np.uint64(1) << np.uint64(63)
                 getLength += np.uint64(1) << np.uint64(62)
                 selfLength = self.storage[self.activeWordIndex] & ~(getLength)
                 otherLength = other.storage[other.activeWordIndex] & ~(getLength)
-                
-                if selfLength != otherLength:
-                    if selfLength > otherLength:
-                        self.storage[self.activeWordIndex] -= otherLength
-                        totalLength = otherLength
-                    if otherLength > selfLength:
-                        other.storage[other.activeWordIndex] -= selfLength
-                        totalLength = selfLength
-                else:
-                    totalLength = selfLength
                         
                 
                 selfRunType = (self.storage[self.activeWordIndex] >> np.uint64(62)) & np.uint64(1)
                 otherRunType = (other.storage[other.activeWordIndex] >> np.uint64(62)) & np.uint64(1)
                 
-                if selfRunType == otherRunType and selfRunType == 1:
-                    self.appendRun(1,totalLength)
-                if selfRunType == otherRunType and selfRunType == 0:
-                    self.appendRun(0,totalLength)
+                if selfRunType == otherRunType and (selfRunType == 1 or selfRunType == 0):
+                    new.appendRun(0,totalLength)
                 if selfRunType != otherRunType:
-                    self.appendRun(1,totalLength)
-                    
+                    new.appendRun(1,totalLength)
+                
                 if selfLength > otherLength:
-                    other.activeWordIndex += 1
-                if selfLength < otherLength:
-                    self.activeWordIndex += 1
-                else:
-                    self.activeWordIndex += 1
-                    other.activeWordIndex += 1
+                    self.moveIteratorForward(otherLength)
+                    other.moveIteratorForward(otherLength)
+                if otherLength > selfLength:
+                    self.moveIteratorForward(selfLength)
+                    other.moveIteratorForward(selfLength)
+                
+
 
             #Case 3: One is literal and one is run
             if selfCheck != otherCheck and (selfCheck == 0 or otherCheck == 0):
@@ -251,7 +260,6 @@ class bitVector:
                     selfRunType = (self.storage[self.activeWordIndex] >> np.uint64(62)) & np.uint64(1)
                     if selfRunType == 1:                    
                         tmpWrd = ~(np.uint64(1) << np.uint64(63))
-                        tmpWrd += np.uint64(1) << np.uint64(63)
                     else:
                         tmpWrd = np.uint64(1) << np.uint64(63)
                     
@@ -259,21 +267,20 @@ class bitVector:
                     otherRunType = (other.storage[other.activeWordIndex] >> np.uint64(62)) & np.uint64(1)
                     if otherRunType == 1:
                         tmpWrd = ~(np.uint64(1) << np.uint64(63))
-                        tmpWrd += np.uint64(1) << np.uint64(63)
                     else:
                         tmpWrd = np.uint64(1) << np.uint64(63)
                         
                 if selfCheck == 0:
                     newWrd = self.storage[self.activeWordIndex] ^ tmpWrd
                     newWrd &= ~(np.uint64(1) << np.uint64(63))
-                    self.appendWord(newWrd)
+                    new.appendWord(newWrd)
                 if otherCheck == 0:
                     newWrd = other.storage[other.activeWordIndex] ^ tmpWrd
                     newWrd &= ~(np.uint64(1) << np.uint64(63))
-                    self.appendWord(newWrd)
+                    new.appendWord(newWrd)
                     
                 if selfCheck == 1:
-                    getLength = np.uint64(1) << np.uint(63)
+                    getLength = np.uint64(1) << np.uint64(63)
                     getLength += np.uint64(1) << np.uint64(62)
                     selfLength = self.storage[self.activeWordIndex] & ~(getLength)
                     if selfLength - 1 == 0:
@@ -293,7 +300,7 @@ class bitVector:
                     self.activeWordIndex += 1
             
         
-        self.storage = self.new
+        self.storage = new.storage
 
     def Or(self, other):
         
@@ -314,57 +321,74 @@ class bitVector:
             otherCheck = other.storage[other.activeWordIndex] >> np.uint64(63)
             
             #Case 1: Both are literals
-            if selfCheck == otherCheck and selfCheck == 0:
+            if selfCheck == 0 and otherCheck == 0:
                 newWrd = self.storage[self.activeWordIndex] | other.storage[other.activeWordIndex]
                 newWrd &= ~(np.uint64(1) << np.uint64(63))
                 
                 new.appendWord(newWrd)
         
-                self.activeWordIndex += 1
-                other.activeWordIndex += 1
+                self.moveIteratorForward(1)
+                other.moveIteratorForward(1)
                 
             #Case 2: Both are runs
-            if selfCheck == otherCheck and otherCheck == 1:
+            if selfCheck == 1 and otherCheck == 1:
                 
-                if self.getLen != other.getLen:
-                    if self.getLen > other.getLen:
-                        self.storage[self.activeWordIndex] -= other.getLen
-                        totalLength = other.getLen
-                    if other.getLen > self.getLen:
-                        other.storage[other.activeWordIndex] -= self.getLen
-                        totalLength = self.getLen
-                else:
-                    totalLength = self.getLen
-                    
                 #Determines whether run is of 1's or 0's
                 selfRunType = (self.storage[self.activeWordIndex] >> np.uint64(62)) & np.uint64(1)
                 otherRunType = (other.storage[other.activeWordIndex] >> np.uint64(62)) & np.uint64(1)
-                    
-                if selfRunType or otherRunType == 1:
-                    self.appendRun(1, totalLength)
-                if selfRunType and otherRunType == 0:
-                    self.appendRun(0, totalLength)
-                    
-                    
-                if self.getLen > other.getLen:
-                    other.activeWordIndex += 1
-                if self.getLen < other.getLen:
-                    self.activeWordIndex += 1
-                else: 
-                    self.activeWordIndex += 1
-                    other.activeWordIndex += 1
                 
-            
+                #Determines overlapping length between the two runs
+                if self.lenRemaining > other.lenRemaining:
+                    overlapLength = other.lenRemaining
+                if self.lenRemaining < other.lenRemaining:
+                    overlapLength = self.lenRemaining
+                else if self.lenRemaining == other.lenRemaining:
+                    overlapLength = self.lenRemaining
+
+                #Conducts OR operation between the two runs
+                if selfRunType == otherRunType:
+                    new.appendRun(selfRunType, overlapLength)
+                    self.moveIteratorForward(overlapLength)
+                    other.moveIteratorForward(overlapLength)
+                else if (selfRunType == 1 and otherRunType == 0) or (selfRunType == 0 and otherRunType == 1):
+                    new.appendRun(1, overlapLength)
+                    self.moveIteratorForward(overlapLength)
+                    other.moveIteratorForward(overlapLength)
+                
             #Case 3: One is a literal, one is a run
             if selfCheck != otherCheck:
-                
+                #Determines whether potential runs are of 1's or 0's
+                selfRunType = (self.storage[self.activeWordIndex] >> np.uint64(62)) & np.uint64(1)
+                otherRunType = (other.storage[other.activeWordIndex] >> np.uint64(62)) & np.uint64(1)
+
+                #Determines which bitVector is a run and which is a literal
                 if selfCheck == 1 and otherCheck == 0:
-                    #Determines whether run is of 1's or 0's
-                    selfRunType = (self.storage[self.activeWordIndex] >> np.uint64(62)) & np.uint64(1)
+                    if selfRunType == 0:
+                        new.appendWord(other.storage(other.activeWordIndex))
+                        self.moveIteratorForward(1)
+                        other.moveIteratorForward(1)
+                    else if selfRunType == 1:
+                        new.appendRun(selfRunType, self.lenRemaining)
+                        self.moveIteratorForward(self.lenRemaining)
+                        other.moveIteratorForward(self.lenRemaining)
+
+                else if selfCheck == 0 and otherCheck == 1:
+                    if otherRunType == 0:
+                        new.appendWord(self.storage(self.activeWordIndex))
+                        self.moveIteratorForward(1)
+                        other.moveIteratorForward(1)
+                    else if otherRunType == 1:
+                        new.appendRun(otherRunType, other.lenRemaining)
+                        self.moveIteratorForward(other.lenRemaining)
+                        other.moveIteratorForward(other.lenRemaining)
                     
-        print new
                 
     def AND(self, other):
+        ######### REMINDER #########
+        #anything '&' with 0 is zero
+        #anything '&' with 1 is that thing
+        ############################
+        
         # Make sure we are starting with the first word
         self.activeWordIndex = 0
         other.activeWordIndex = 0
@@ -377,11 +401,11 @@ class bitVector:
         # Fix Me #
         ##########
 
-        for i in range(maxLen):
+        while (wordsLeft):
 
             # use bit shifting to see if we have fill words or literal words
-            msbSelf = self.storage[self.activeWordIndex] & ( np.uint64(1) << np.uint64(63) )
-            msbOther = other.storage[other.activeWordIndex] & ( np.uint64(1) << np.uint64(63) ) 
+            msbSelf = self.storage[self.activeWordIndex] >> np.uint64(63) 
+            msbOther = other.storage[other.activeWordIndex] >> np.uint64(63)  
 
             #Case 1: if both are fill
             if msbSelf == 1 and msbOther == 1:
@@ -390,79 +414,163 @@ class bitVector:
                 otherRunType = other.storage[other.activeWordIndex] & ( np.uint64(1) << np.uint64(62) )
 
                 #find the length of the fills
-                selfLen = self.getLen()
-                otherLen = other.getLen()
+                selfLen = self.lenRemaining
+                otherLen = other.lenRemaining
 
                 #if both are fills of 0's iterate by the larger length
-                if selfRunType == 0 and other == 0:
+                if selfRunType == 0 and otherRunType == 0:
+
+                    #if SELF is a longer fill than OTHER
                     if selfLen > otherLen:
+                        #iterate OTHER by selfLen
                         other.moveIteratorForward(selfLen)
+
+                        #add the SELF fill word to the new Bit Vector
                         new.appendWord( self.storage[self.activeWordIndex] )
-                        self.activeWordIndex += 1
 
+                        #move onto the next word in SELF
+                        self.moveIteratorForward(1)
+                    #if OTHER is a longer fill than SELF
                     else:
+                        #iterate SELF by otherLen
                         self.moveIteratorForward(otherLen)
+
+                        #add the OTHER fill word to new Bit Vector
                         new.appendWord( other.storage[other.activeWordIndex] )
-                        other.activeWordIndex += 1
 
-                #if only self is a run of 0's
+                        #move onto the next word in OTHER
+                        other.moveIteratorForward(1)
+
+                #if only SELF is a fill of 0's
                 elif selfRunType == 0:
-                    other.moveIteratorForward(selfLen)                    
-                    new.appendWord( self.storage[self.activeWordIndex] )
-                    self.activeWordIndex += 1
+                    #move OTHER by selfLen
+                    other.moveIteratorForward(selfLen)  
 
-                #if only other is a run of 0's
+                    #add the fill of 0's to new Bit Vector                  
+                    new.appendWord( self.storage[self.activeWordIndex] )
+
+                    #move onto the next word of SELF
+                    self.moveIteratorForward(1)
+
+                #if only OTHER is a fill of 0's
                 elif otherRunType == 0:
+                    #move SELF by otherLen
                     self.moveIteratorForward(otherLen)
+
+                    #add the fill of 0's to new Bit Vector 
                     new.appendWord( other.storage[other.activeWordIndex] )
-                    other.activeWordIndex += 1
+
+                    #move onto the next word of OTHER
+                    other.moveIteratorForward(1)
+                
+                #if both are fills of 1's
+                else:
+                    #if OTHER is longer
+                    if otherLen > selfLen:
+                        #move OTHER by the amount of selfLen
+                        other.moveIteratorForward(selfLen)
+
+                        #append SELF to the new Bit Vector
+                        new.appendWord( self.storage[self.activeWordIndex] )
+
+                        #move SELF to the next word
+                        self.moveIteratorForward(1)
+
+                    #if SELF is longer
+                    else:
+                        #move SELF by the amount of otherLen
+                        self.moveIteratorForward(otherLen)
+
+                        #append OTHER to the new Bit Vector
+                        new.appendWord( other.storage[other.activeWordIndex] )
+
+                        #move OTHER to the next word
+                        other.moveIteratorForward(1)
+
                     
-            #Case 2: if only self is a fill
+            #Case 2: if only SELF is a fill
             elif msbSelf == 1:
 
                 #find if its a fill of 0's or 1's
                 selfRunType = self.storage[self.activeWordIndex] & ( np.uint64(1) << np.uint64(62) )
 
                 #find the length of the fill
-                selfLen = self.getLen()
+                selfLen = self.lenRemaining
 
                 #if the fill is of 0's than just write the fill
                 if selfRunType == 0:
                     other.moveIteratorForward(selfLen)
                     new.appendWord( self.storage[self.activeWordIndex] )
-                    self.activeWordIndex += 1
+                    self.moveIteratorForward(1)
 
                 #if the fill is of 1's than iterate through 
                 else:
-                    #creating variables that will help us later
-                    otherRunType = 0
+                    #creating a variable that will help us later
                     msbOther = 0
 
                     for i in range(selfLen):
-                        #check to see if we incounter a fill of 0's, break if we do
-                        if (otherRunType == 0 & msbOther == 1 ):
+                        #check to see if we incounter a fill of 0's, break if we do and change the
+                        #the remaining length of SELF with repsect to how many times we have looped
+                        if msbOther == 1 :
                             self.lenRemaining = selfLen - i
                             break
+
                         else:
-                            #since anything '&' with 1 is itself we can just add the 'other' word
+                            #since anything '&' with 1 is itself we can just add the OTHER word
                             new.appendWord(other.storage[other.activeWordIndex])
 
-
+                            #increase activeWordIndex since we know that OTHER is a literal word
                             other.moveIteratorForward(1)
 
-                            #update to check for a fill of 0's
-                            otherRunType = other.storage[other.activeWordIndex] & ( np.uint64(1) << np.uint64(62) )
+                            #update OTHER so we can check if we run into a fill word
                             msbOther = other.storage[other.activeWordIndex] & ( np.uint64(1) << np.uint64(63) ) 
                     
-
-            
-            #Case 3: if only other is a fill
+            #Case 3: if only OTHER is a fill
             elif msbOther == 1:
                 #find if its a fill of 0's or 1's
                 otherRunType = other.storage[other.activeWordIndex] & ( np.uint64(1) << np.uint64(62) )
                                 
                 #find the length of the fill
-                otherLen = other.getLen()
+                otherLen = other.lenRemaining
 
+                #if the fill is of 0's than just write the fill and move OTHER to 
+                #the next word
                 if otherRunType == 0:
                     self.moveIteratorForward(otherLen)
+                    new.appendWord( other.storage[other.activeWordIndex] )
+                    other.moveIteratorForward(1)
+
+                #if the fill is of 1's than iterate through 
+                else:
+                    #creating a variable that will help us later
+                    msbSelf = 0
+
+                    for i in range(otherLen):
+                        #check to see if we incounter a fill of 0's, break if we do and change the
+                        #the remaining length of OTHER with repsect to how many times we have looped
+                        if msbSelf == 1 :
+                            other.lenRemaining = otherLen - i
+                            break
+
+                        else:
+                            #since anything '&' with 1 is itself we can just add the SELF word
+                            new.appendWord(self.storage[self.activeWordIndex])
+
+                            #increase activeWordIndex since we know that SELF is a literal word
+                            self.moveIteratorForward(1)
+
+                            #update SELF so we can check if we run into a fill word
+                            msbSelf = self.storage[self.activeWordIndex] >> np.uint64(63) 
+
+            #Case 4: if both are literals
+            else:
+                #since both are literal we can just do a bitwise '&' on them and store that into our new Bit Vector
+                new.appendWord( self.storage[self.activeWordIndex] & other.storage[other.activeWord] )
+
+                #We than want to move onto the next index
+                self.moveIteratorForward(1)
+                other.moveIteratorForward(1)
+
+
+
+
