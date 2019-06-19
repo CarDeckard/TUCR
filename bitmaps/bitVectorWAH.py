@@ -106,16 +106,18 @@ class bitVector:
         prevRunType = self.storage[self.activeWordIndex - 1] & (np.uint64(1) << np.uint64(62))
         
         if prevRunType == runType:
-            #Checks if length is too big to add to current run
-            while (self.storage[self.activeWordIndex - 1] & ~(np.uint64(3) << np.uint64(62))) <= 4611686018427387903:
-                #Adds one to the length 
+            #if we do not overrun by adding the length than just add the length
+            # 4611686018427387903 is the max length that our fill words can represent
+            if (self.getLen + length) < 4611686018427387903:
                 self.storage[self.activeWordIndex - 1] += length
-            #If run becomes too large it will create an new run in the next spot in storage
-            self.ensureStorageFits(self.activeWordIndex + 1)
-            newRun = np.uint64(1) << np.uint64(63)
-            newRun += np.uint64(runType) << np.uint64(62)
-            newRun += 1
-            self.storage[self.activeWordIndex] = newRun
+            
+            #If run becomes too large it will create an new run in the next spot in storage                
+            else:
+                self.ensureStorageFits(self.activeWordIndex + 1)
+                newRun = np.uint64(1) << np.uint64(63)
+                newRun += np.uint64(runType) << np.uint64(62)
+                newRun += 1
+                self.storage[self.activeWordIndex] = newRun
             
         else:
             self.ensureStorageFits(self.activeWordIndex + 1)        
