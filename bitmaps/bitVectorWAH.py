@@ -413,12 +413,16 @@ class bitVector:
         self.getFirstLenRemaining()
         other.getFirstLenRemaining()
 
+        #Since our bit vectors will be of the same length we can just keep
+        #track of the length of self we will update loopLen whenever we update
+        #self.activeWordIndex
+        loopLen = self.getTotalLength()
         
         ##########
         # Fix Me #
         ##########
 
-        while (wordsLeft):
+        while (loopLen != 0):
 
             # use bit shifting to see if we have fill words or literal words
             msbSelf = self.storage[self.activeWordIndex] >> np.uint64(63) 
@@ -448,6 +452,9 @@ class bitVector:
                         #move onto the next word in SELF
                         self.moveIteratorForward(1)
                         
+                        #update loopLen
+                        loopLen -= 1
+                        
                     #if OTHER is a longer fill than SELF
                     else:
                         #iterate SELF by otherLen
@@ -458,6 +465,9 @@ class bitVector:
 
                         #move onto the next word in OTHER
                         other.moveIteratorForward(1)
+                        
+                        #update loopLen
+                        loopLen -= otherLen
 
                 #if only SELF is a fill of 0's
                 elif selfRunType == 0:
@@ -469,6 +479,9 @@ class bitVector:
 
                     #move onto the next word of SELF
                     self.moveIteratorForward(1)
+                    
+                    #update loopLen
+                    loopLen -= 1
 
                 #if only OTHER is a fill of 0's
                 elif otherRunType == 0:
@@ -480,6 +493,9 @@ class bitVector:
 
                     #move onto the next word of OTHER
                     other.moveIteratorForward(1)
+                    
+                    #update loopLen
+                    loopLen -= otherLen
                 
                 #if both are fills of 1's
                 else:
@@ -493,6 +509,9 @@ class bitVector:
 
                         #move SELF to the next word
                         self.moveIteratorForward(1)
+                        
+                        #update loopLen
+                        loopLen -= 1
 
                     #if SELF is longer
                     else:
@@ -504,6 +523,9 @@ class bitVector:
 
                         #move OTHER to the next word
                         other.moveIteratorForward(1)
+                        
+                        #update loopLen
+                        loopLen -= otherLen
 
                     
             #Case 2: if only SELF is a fill
@@ -519,7 +541,10 @@ class bitVector:
                 if selfRunType == 0:
                     other.moveIteratorForward(selfLen)
                     new.appendWord( self.storage[self.activeWordIndex] )
-                    self.moveIteratorForward(1)
+                    self.moveIteratorForward(selfLen)
+                    
+                    #update loopLen
+                    loopLen -= selfLen
 
                 #if the fill is of 1's than iterate through 
                 else:
@@ -530,7 +555,6 @@ class bitVector:
                         #check to see if we incounter a fill of 0's, break if we do and change the
                         #the remaining length of SELF with repsect to how many times we have looped
                         if msbOther == 1 :
-                            self.lenRemaining = selfLen - i
                             break
 
                         else:
@@ -541,7 +565,14 @@ class bitVector:
                             other.moveIteratorForward(1)
 
                             #update OTHER so we can check if we run into a fill word
-                            msbOther = other.storage[other.activeWordIndex] & ( np.uint64(1) << np.uint64(63) ) 
+                            msbOther = other.storage[other.activeWordIndex] >> np.uint64(63)
+                            
+                            #update self.lenRemaining
+                            self.moveIteratorForward(1)
+                            
+                            loopLen -= 1
+                            
+                        
                     
             #Case 3: if only OTHER is a fill
             elif msbOther == 1:
@@ -556,7 +587,10 @@ class bitVector:
                 if otherRunType == 0:
                     self.moveIteratorForward(otherLen)
                     new.appendWord( other.storage[other.activeWordIndex] )
-                    other.moveIteratorForward(1)
+                    other.moveIteratorForward(otherLen)
+                    
+                    #update loopLen
+                    loopLen -= otherLen
 
                 #if the fill is of 1's than iterate through 
                 else:
@@ -567,7 +601,6 @@ class bitVector:
                         #check to see if we incounter a fill of 0's, break if we do and change the
                         #the remaining length of OTHER with repsect to how many times we have looped
                         if msbSelf == 1 :
-                            other.lenRemaining = otherLen - i
                             break
 
                         else:
@@ -576,9 +609,16 @@ class bitVector:
 
                             #increase activeWordIndex since we know that SELF is a literal word
                             self.moveIteratorForward(1)
+                            
+                            #update loopLen
+                            loopLen -= 1 
 
                             #update SELF so we can check if we run into a fill word
-                            msbSelf = self.storage[self.activeWordIndex] >> np.uint64(63) 
+                            msbSelf = self.storage[self.activeWordIndex] >> np.uint64(63)                             
+                            
+                            #update other.lenRemaining
+                            other.moveIteratorForward(1)
+                    
 
             #Case 4: if both are literals
             else:
@@ -588,6 +628,9 @@ class bitVector:
                 #move onto the next word
                 self.moveIteratorForward(1)
                 other.moveIteratorForward(1)
+                
+                #update loopLen
+                loopLen -= 1
 
 
 
