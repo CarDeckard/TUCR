@@ -6,6 +6,15 @@ class bitVector:
     #                         Helper Functions                            #
     #######################################################################
 
+    def getFirstLenRemaining(self):
+        #allows us to initialize the lenRemaining of the first word
+        if ( self.storage[self.activeWordIndex] >> np.uint64(63) ) == 1:
+            #if fill word get the length of it
+            self.lenRemaining = self.storage[self.activeWordIndex] & ~( np.uint64(3) << np.uint64(62) )
+        else:
+            #if literal just set to 0
+            self.lenRemaining = 0;
+
     def getLen(self):
         #gets the length of the run word 
         return (self.storage[self.activeWordIndex] & ~(np.uint64(3) << np.uint64(62)))
@@ -123,9 +132,9 @@ class bitVector:
 
         #Creates bitVector
         self.storage = np.zeros(1,dtype = np.uint64)
+        
         #Sets wordSize
         self.wordSizeInBits = np.uint64(64)
-        
         
         #rows in word
         self.numRows = 0
@@ -134,6 +143,7 @@ class bitVector:
         # See also comments on activeWordIndex.
         #length of last literal
         self.partialLiteralLength = 0
+        
         #Sets numWords to zero
         self.numWords = 1 # length of storage
         
@@ -142,13 +152,10 @@ class bitVector:
         self.activeWordIndex = 0 # this is the index of the active word
 
         #lenRemaining is the lenght of the fill word
-        #it is set to 0 if the word it literal
-        if (self.storage[self.activeWordIndex] >> 63) == 1:
-            self.lenRemaining = self.getLen()
-        else:
-            self.lenRemaining = 0
+        self.lenRemaining = 0
         
-        self.appendWordIndex = 0 # Location of the last word in the bitvector. The append function will *only* work with this index.
+        # Location of the last word in the bitvector. The append function will *only* work with this index.
+        self.appendWordIndex = 0 
     
     def append(self,bit):
         self.numRows += 1
@@ -342,7 +349,7 @@ class bitVector:
                     overlapLength = other.lenRemaining
                 if self.lenRemaining < other.lenRemaining:
                     overlapLength = self.lenRemaining
-                else if self.lenRemaining == other.lenRemaining:
+                elif self.lenRemaining == other.lenRemaining:
                     overlapLength = self.lenRemaining
 
                 #Conducts OR operation between the two runs
@@ -350,7 +357,7 @@ class bitVector:
                     new.appendRun(selfRunType, overlapLength)
                     self.moveIteratorForward(overlapLength)
                     other.moveIteratorForward(overlapLength)
-                else if (selfRunType == 1 and otherRunType == 0) or (selfRunType == 0 and otherRunType == 1):
+                elif (selfRunType == 1 and otherRunType == 0) or (selfRunType == 0 and otherRunType == 1):
                     new.appendRun(1, overlapLength)
                     self.moveIteratorForward(overlapLength)
                     other.moveIteratorForward(overlapLength)
@@ -367,27 +374,27 @@ class bitVector:
                         new.appendWord(other.storage(other.activeWordIndex))
                         self.moveIteratorForward(1)
                         other.moveIteratorForward(1)
-                    else if selfRunType == 1:
+                    elif selfRunType == 1:
                         new.appendRun(selfRunType, self.lenRemaining)
                         self.moveIteratorForward(self.lenRemaining)
                         other.moveIteratorForward(self.lenRemaining)
 
-                else if selfCheck == 0 and otherCheck == 1:
+                elif selfCheck == 0 and otherCheck == 1:
                     if otherRunType == 0:
                         new.appendWord(self.storage(self.activeWordIndex))
                         self.moveIteratorForward(1)
                         other.moveIteratorForward(1)
-                    else if otherRunType == 1:
+                    elif otherRunType == 1:
                         new.appendRun(otherRunType, other.lenRemaining)
                         self.moveIteratorForward(other.lenRemaining)
                         other.moveIteratorForward(other.lenRemaining)
                     
                 
     def AND(self, other):
-        ######### REMINDER #########
-        #anything '&' with 0 is zero
-        #anything '&' with 1 is that thing
-        ############################
+        ############ REMINDER #############
+        #   anything '&' with 0 is zero   #
+        #anything '&' with 1 is that thing#
+        ###################################
         
         # Make sure we are starting with the first word
         self.activeWordIndex = 0
@@ -395,6 +402,9 @@ class bitVector:
 
         #create a new bit vector to store the result 
         new = bitVector()
+        
+        self.getFirstLenRemaining()
+        other.getFirstLenRemaining()
 
         
         ##########
@@ -430,6 +440,7 @@ class bitVector:
 
                         #move onto the next word in SELF
                         self.moveIteratorForward(1)
+                        
                     #if OTHER is a longer fill than SELF
                     else:
                         #iterate SELF by otherLen
@@ -567,7 +578,7 @@ class bitVector:
                 #since both are literal we can just do a bitwise '&' on them and store that into our new Bit Vector
                 new.appendWord( self.storage[self.activeWordIndex] & other.storage[other.activeWord] )
 
-                #We than want to move onto the next index
+                #move onto the next word
                 self.moveIteratorForward(1)
                 other.moveIteratorForward(1)
 
