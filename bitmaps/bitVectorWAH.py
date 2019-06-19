@@ -160,6 +160,9 @@ class bitVector:
         
         # Location of the last word in the bitvector. The append function will *only* work with this index.
         self.appendWordIndex = 0 
+        
+        #totallength
+        self.totalLength = 0
     
     def append(self,bit):
         self.numRows += 1
@@ -217,10 +220,10 @@ class bitVector:
 
         #Creates new bitVector to hold xor operation
         new = bitVector()
-        totalLength = self.getTotalLength()
+        self.totalLength = self.getTotalLength()
         
         #FIXME: Not sure how to iterate this 
-        while totalLength:
+        while self.totalLength:
             
             #checks for cases
             selfCheck = self.storage[self.activeWordIndex] >> np.uint64(63)
@@ -234,7 +237,6 @@ class bitVector:
                 new.appendWord(newWrd)
                 #Since we used these two words, we subtract one from each of the total lengths 
                 self.totalLength -= 1
-                other.totalLength -= 1
                 #Moves the iterator forward for each bitVector (since both literals we move each by one word)
                 self.moveIteratorForward(1)
                 other.moveIteratorForward(1)
@@ -260,13 +262,16 @@ class bitVector:
                 if selfLength > otherLength:
                     self.moveIteratorForward(otherLength)
                     other.moveIteratorForward(otherLength)
+                    self.totalLength -= otherLength
                 if otherLength > selfLength:
                     self.moveIteratorForward(selfLength)
                     other.moveIteratorForward(selfLength)
+                    self.totalLength -= selfLength
                 #If same size
                 else:
                     self.moveIteratorForward(selfLength)
                     other.moveIteratorForward(otherLength)
+                    self.totalLength -= selfLength
                 
 
 
@@ -308,6 +313,7 @@ class bitVector:
                 #Moves iterator forward and it will track run length
                 self.moveIteratorForward(1)
                 other.moveIteratorForward(1)
+                self.totalLength -= 1
             
         #Sets the bitVector's storage equal to the XOR'ed bitVector
         self.storage = new.storage
