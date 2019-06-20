@@ -376,8 +376,7 @@ class bitVectorWAH(object):
                 else:
                     #Get the run type of you
                     youType = you.getRunType(youLiteral)
-                    
-<<<<<<< HEAD
+                
                     #If me is a run of 0's append the run of 0's and iterate by meLenRemaining
                     if youType == 0:
                         
@@ -403,7 +402,6 @@ class bitVectorWAH(object):
                         me.moveIteratorForward(1)
                         you.moveIteratorForward(1)
                         
-=======
 
             #Case 4: if both are literals
             else:
@@ -419,5 +417,3 @@ class bitVectorWAH(object):
 
 
 
-
->>>>>>> 96a10f74464c231a4dde8a5908973c7452617a5b
