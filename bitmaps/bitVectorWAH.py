@@ -330,7 +330,13 @@ class bitVector:
         #sets activeWordIndex to zero for both self and other
         self.activeWordIndex = 0
         other.activeWordIndex = 0
-        for i in range(len(self.storage)):
+        
+        #Since our bit vectors will be of the same length we can just keep
+        #track of the length of self we will update loopLen whenever we update
+        #self.activeWordIndex
+        loopLen = self.getTotalLength()
+        
+        for i in range(loopLen):
             
             #Determines whether the word is a literal or a run
             selfCheck = self.storage[self.activeWordIndex] >> np.uint64(63)
@@ -346,6 +352,8 @@ class bitVector:
                 self.moveIteratorForward(1)
                 other.moveIteratorForward(1)
                 
+                loopLen -= 1
+                
             #Case 2: Both are runs
             if selfCheck == 1 and otherCheck == 1:
                 
@@ -356,20 +364,24 @@ class bitVector:
                 #Determines overlapping length between the two runs
                 if self.lenRemaining > other.lenRemaining:
                     overlapLength = other.lenRemaining
-                if self.lenRemaining < other.lenRemaining:
+                else:
                     overlapLength = self.lenRemaining
-                elif self.lenRemaining == other.lenRemaining:
-                    overlapLength = self.lenRemaining
+
 
                 #Conducts OR operation between the two runs
                 if selfRunType == otherRunType:
                     new.appendRun(selfRunType, overlapLength)
                     self.moveIteratorForward(overlapLength)
                     other.moveIteratorForward(overlapLength)
+                    
+                    loopLen -= overlapLength
+                    
                 elif (selfRunType == 1 and otherRunType == 0) or (selfRunType == 0 and otherRunType == 1):
                     new.appendRun(1, overlapLength)
                     self.moveIteratorForward(overlapLength)
                     other.moveIteratorForward(overlapLength)
+                    
+                    loopLen -= overlapLength
                 
             #Case 3: One is a literal, one is a run
             if selfCheck != otherCheck:
@@ -383,20 +395,30 @@ class bitVector:
                         new.appendWord(other.storage(other.activeWordIndex))
                         self.moveIteratorForward(1)
                         other.moveIteratorForward(1)
+                        
+                        loopLen -= 1
+                        
                     elif selfRunType == 1:
                         new.appendRun(selfRunType, self.lenRemaining)
                         self.moveIteratorForward(self.lenRemaining)
                         other.moveIteratorForward(self.lenRemaining)
+                        
+                        loopLen -= self.lenRemaining
 
                 elif selfCheck == 0 and otherCheck == 1:
                     if otherRunType == 0:
                         new.appendWord(self.storage(self.activeWordIndex))
                         self.moveIteratorForward(1)
                         other.moveIteratorForward(1)
+                        
+                        loopLen -= 1
+                        
                     elif otherRunType == 1:
                         new.appendRun(otherRunType, other.lenRemaining)
                         self.moveIteratorForward(other.lenRemaining)
                         other.moveIteratorForward(other.lenRemaining)
+                        
+                        loopLen -= other.lenRemaining
                     
                 
     def AND(self, other):
@@ -419,10 +441,6 @@ class bitVector:
         #track of the length of self we will update loopLen whenever we update
         #self.activeWordIndex
         loopLen = self.getTotalLength()
-        
-        ##########
-        # Fix Me #
-        ##########
 
         while (loopLen != 0):
 
