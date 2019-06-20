@@ -252,10 +252,10 @@ class bitVector:
                 otherRunType = (other.storage[other.activeWordIndex] >> np.uint64(62)) & np.uint64(1)
                 #If the runtypes are equal (1 == 1 or 0 == 0)
                 if selfRunType == otherRunType and (selfRunType == 1 or selfRunType == 0):
-                    new.appendRun(0,totalLength)
+                    new.appendRun(0,self.totalLength)
                 #If the runtypes are not equal
                 if selfRunType != otherRunType:
-                    new.appendRun(1,totalLength)
+                    new.appendRun(1,self.totalLength)
                 #Checks which run is smaller
                 if selfLength > otherLength:
                     self.moveIteratorForward(otherLength)
@@ -623,7 +623,7 @@ class bitVector:
             #Case 4: if both are literals
             else:
                 #since both are literal we can just do a bitwise '&' on them and store that into our new Bit Vector
-                new.appendWord( self.storage[self.activeWordIndex] & other.storage[other.activeWord] )
+                new.appendWord( self.storage[self.activeWordIndex] & other.storage[other.activeWordIndex] )
 
                 #move onto the next word
                 self.moveIteratorForward(1)
