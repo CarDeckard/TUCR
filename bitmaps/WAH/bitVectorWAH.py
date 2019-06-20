@@ -19,8 +19,8 @@ class bitVectorWAH(object):
             raise Exception("Not the same size.")
         
         # These are the iterators which
-        me = WAHStorageWordIterator(self)
-        you = WAHStorageWordIterator(other)
+        me = WAHStorageWordIterator(self.wahStorage)
+        you = WAHStorageWordIterator(other.wahStorage)
 
         #Creates new bitVector to hold xor operation
         new = WAHStorageWordBuilder()
