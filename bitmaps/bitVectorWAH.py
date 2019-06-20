@@ -1,6 +1,7 @@
 import numpy as np
+from ABCBitVector import ABCBitVector
 
-class bitVector:
+class bitVector(ABCBitVector):
 
     #######################################################################
     #                         Helper Functions                            #
