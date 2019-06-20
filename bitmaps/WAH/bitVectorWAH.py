@@ -47,78 +47,51 @@ class bitVectorWAH(object):
             #Case 2: Both are fills
             # FIXME: I only modified the if statement. You need to fix up the rest.
             elif (not meLiteral) and (not youLiteral):
-                #Gets the length of the two fills 
-                getLength = np.uint64(1) << np.uint64(63)
-                getLength += np.uint64(1) << np.uint64(62)
-                selfLength = self.storage[self.activeWordIndex] & ~(getLength)
-                otherLength = other.storage[other.activeWordIndex] & ~(getLength)
-                        
-                #Gets whether the runs are runs of one's or zero's
-                selfRunType = (self.storage[self.activeWordIndex] >> np.uint64(62)) & np.uint64(1)
-                otherRunType = (other.storage[other.activeWordIndex] >> np.uint64(62)) & np.uint64(1)
-                #If the runtypes are equal (1 == 1 or 0 == 0)
-                if selfRunType == otherRunType and (selfRunType == 1 or selfRunType == 0):
-                    new.appendRun(0,self.totalLength)
-                #If the runtypes are not equal
-                if selfRunType != otherRunType:
-                    new.appendRun(1,self.totalLength)
-                #Checks which run is smaller
-                if selfLength > otherLength:
-                    self.moveIteratorForward(otherLength)
-                    other.moveIteratorForward(otherLength)
-                    self.totalLength -= otherLength
-                if otherLength > selfLength:
-                    self.moveIteratorForward(selfLength)
-                    other.moveIteratorForward(selfLength)
-                    self.totalLength -= selfLength
-                #If same size
+                ######XOR of Runs Table######
+                # A # B ################ Z ##
+                #--------------------------##
+                # 0 # 0 ################ 0 ##
+                # 0 # 1 ################ 1 ##
+                # 1 # 0 ################ 1 ##
+                # 1 # 1 ################ 0 ##
+                #############################
+                #Gets the run types for me and you to determine the fill that will be appended
+                meRunType = me.wahStorage.getRunType(meActiveWord)
+                youRunType = you.wahStorage.getRunType(youActiveWord)
+                #Gets length of current word                
+                meLength = me.wahStorage.getRunLen(meActiveWord)
+                youLength = you.wahStorage.getRunLen(youActiveWord)
+                #Compares length the determine how to iterate
+                if meLength == youLength:
+                    appendLength = meLength
                 else:
-                    self.moveIteratorForward(selfLength)
-                    other.moveIteratorForward(otherLength)
-                    self.totalLength -= selfLength
+                    if meLength > youLength:
+                        appendLength = youLength
+                    else:
+                        appendLength = meLength
                 
-
+                #compares runtypes and decides what to append
+                if meRunType == youRunType:
+                    new.appendRun(0,appendLength)
+                else:
+                    new.appendRun(1,appendLength)
+                    
+                #Move iterator by the smaller size
+                me.moveIteratorForward(appendLength)
+                you.moveIteratorForward(appendLength)                
 
             #Case 3: One is literal and one is run
             # FIXME: I only modified the if statement. You need to fix up the rest.
             else:
-                #If self is a run
-                if selfCheck == 1:
-                    #Gets self's runtype
-                    selfRunType = (self.storage[self.activeWordIndex] >> np.uint64(62)) & np.uint64(1)
-                    #If run of ones
-                    if selfRunType == 1:
-                        #Creates a literal of ones to be XOR'ed (first bit doesn't matter)
-                        tmpWrd = ~(np.uint64(1) << np.uint64(63))
-                    #Run of zeros
-                    else:
-                        #Creates a literal of zeros to be XOR'ed (first bit doesn't matter)
-                        tmpWrd = np.uint64(1) << np.uint64(63)
-                        
-                    newWrd = other.storage[other.activeWordIndex] ^ tmpWrd
-                    newWrd &= ~(np.uint64(1) << np.uint64(63))
-                    new.appendWord(newWrd)
+                #If me is literal (you is run)
+                if meLiteral:
+                    youRunType = you.wahStorage.getRunType(youActiveWord)
                     
-                #If other is run
-                if otherCheck == 1:
-                    #Get other's runtype
-                    otherRunType = (other.storage[other.activeWordIndex] >> np.uint64(62)) & np.uint64(1)
-                    #If runtype is run of ones
-                    if otherRunType == 1:
-                        #Creates a literal of ones to be XOR'ed (first bit doesn't matter)
-                        tmpWrd = ~(np.uint64(1) << np.uint64(63))
-                    #Run of zeros
+                    if youRunType == 0:
+                        new.appendRun(0,1)
                     else:
-                        #Creates a literal of zeros to be XOR'ed (first bit doesn't matter)
-                        tmpWrd = np.uint64(1) << np.uint64(63)
-                        
-                    newWrd = self.storage[self.activeWordIndex] ^ tmpWrd
-                    newWrd &= ~(np.uint64(1) << np.uint64(63))
-                    new.appendWord(newWrd)
-                #Moves iterator forward and it will track run length
-                self.moveIteratorForward(1)
-                other.moveIteratorForward(1)
-                self.totalLength -= 1
+                        tmpWrd = 
+                    
             
         #Sets the bitVector's storage equal to the XOR'ed bitVector
         self.storage = new.storage
