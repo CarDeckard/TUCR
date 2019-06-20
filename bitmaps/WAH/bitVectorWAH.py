@@ -14,6 +14,16 @@ class bitVectorWAH(object):
     
     ## NOTE: I partially modified this, to use the new iterator. You need to fix the rest.
     def xor(self, other):
+
+        ##########XOR Table##########
+        # A # B ################ Z ##
+        #--------------------------##
+        # 0 # 0 ################ 0 ##
+        # 0 # 1 ################ 1 ##
+        # 1 # 0 ################ 1 ##
+        # 1 # 1 ################ 0 ##
+        #############################        
+        
         #Checks if Bit Vectors are same size (throws error if not)
         if self.wahStorage.totalLength != other.wahStorage.totalLength:
             raise Exception("Not the same size.")
@@ -90,7 +100,14 @@ class bitVectorWAH(object):
                     if youRunType == 0:
                         new.appendRun(0,1)
                     else:
-                        tmpWrd = 
+                        new.appendWord(~(meActiveWord))
+                if youLiteral:
+                    meRunType = me.wahStorage.getRunType(meActiveWord)
+                    
+                    if meRunType == 0:
+                        new.appendRun(0,1)
+                    else:
+                        new.appendWord(~(youActiveWord))
                     
             
         #Sets the bitVector's storage equal to the XOR'ed bitVector
