@@ -232,232 +232,183 @@ class bitVectorWAH(object):
         #   anything '&' with 0 is zero   #
         #anything '&' with 1 is that thing#
         ###################################
+
+        #Checks if Bit Vectors are same size (throws error if not)
+        if self.wahStorage.totalLength != other.wahStorage.totalLength:
+            raise Exception("Not the same size.")
         
-        # Make sure we are starting with the first word
-        self.activeWordIndex = 0
-        other.activeWordIndex = 0
+        # These are the iterators which
+        me = WAHStorageWordIterator(self.wahStorage)
+        you = WAHStorageWordIterator(other.wahStorage)
 
-        #create a new bit vector to store the result 
-        new = bitVector()
-        
-        self.getFirstLenRemaining()
-        other.getFirstLenRemaining()
+        #Creates new bitVector to hold xor operation
+        new = WAHStorageWordBuilder()        
 
-        #Since our bit vectors will be of the same length we can just keep
-        #track of the length of self we will update loopLen whenever we update
-        #self.activeWordIndex
-        loopLen = self.getTotalLength()
-
-        while (loopLen != 0):
-
-            # use bit shifting to see if we have fill words or literal words
-            msbSelf = self.storage[self.activeWordIndex] >> np.uint64(63) 
-            msbOther = other.storage[other.activeWordIndex] >> np.uint64(63)  
-
-            #Case 1: if both are fill
-            if msbSelf == 1 and msbOther == 1:
-                #find what kind of fills we are dealing with
-                selfRunType = self.storage[self.activeWordIndex] & ( np.uint64(1) << np.uint64(62) )
-                otherRunType = other.storage[other.activeWordIndex] & ( np.uint64(1) << np.uint64(62) )
-
-                #find the length of the fills
-                selfLen = self.lenRemaining
-                otherLen = other.lenRemaining
-
-                #if both are fills of 0's iterate by the larger length
-                if selfRunType == 0 and otherRunType == 0:
-
-                    #if SELF is a longer fill than OTHER
-                    if selfLen > otherLen:
-                        #iterate OTHER by selfLen
-                        other.moveIteratorForward(selfLen)
-
-                        #add the SELF fill word to the new Bit Vector
-                        new.appendWord( self.storage[self.activeWordIndex] )
-
-                        #move onto the next word in SELF
-                        self.moveIteratorForward(1)
-                        
-                        #update loopLen
-                        loopLen -= 1
-                        
-                    #if OTHER is a longer fill than SELF
-                    else:
-                        #iterate SELF by otherLen
-                        self.moveIteratorForward(otherLen)
-
-                        #add the OTHER fill word to new Bit Vector
-                        new.appendWord( other.storage[other.activeWordIndex] )
-
-                        #move onto the next word in OTHER
-                        other.moveIteratorForward(1)
-                        
-                        #update loopLen
-                        loopLen -= otherLen
-
-                #if only SELF is a fill of 0's
-                elif selfRunType == 0:
-                    #move OTHER by selfLen
-                    other.moveIteratorForward(selfLen)  
-
-                    #add the fill of 0's to new Bit Vector                  
-                    new.appendWord( self.storage[self.activeWordIndex] )
-
-                    #move onto the next word of SELF
-                    self.moveIteratorForward(1)
-                    
-                    #update loopLen
-                    loopLen -= 1
-
-                #if only OTHER is a fill of 0's
-                elif otherRunType == 0:
-                    #move SELF by otherLen
-                    self.moveIteratorForward(otherLen)
-
-                    #add the fill of 0's to new Bit Vector 
-                    new.appendWord( other.storage[other.activeWordIndex] )
-
-                    #move onto the next word of OTHER
-                    other.moveIteratorForward(1)
-                    
-                    #update loopLen
-                    loopLen -= otherLen
+        while not ( me.isDone() or you.isDone() ):
+            (meActiveWord, meLenRemaining) = me.current()
+            (youActiveWord, youLenRemaining) = you.current()
+            
+            meLiteral = me.wahStorage.isLiteral(meActiveWord)
+            youLiteral = you.wahStorage.isLiteral(youActiveWord)
+            
+            #Case 1: Both are literals
+            if meLiteral and youLiteral:
+                #AND operation done between the two current words
+                newWrd = meActiveWord & youActiveWord
+                #Adds the AND'ed word to the new bitVector
+                new.appendWord(newWrd)
                 
-                #if both are fills of 1's
-                else:
-                    #if OTHER is longer
-                    if otherLen > selfLen:
-                        #move OTHER by the amount of selfLen
-                        other.moveIteratorForward(selfLen)
-
-                        #append SELF to the new Bit Vector
-                        new.appendWord( self.storage[self.activeWordIndex] )
-
-                        #move SELF to the next word
-                        self.moveIteratorForward(1)
+                #Moves the iterator forward for each bitVector
+                me.moveIteratorForward(1)
+                you.moveIteratorForward(1)
+            
+            #Case 2: Both are fills
+            elif (not meLiteral) and (not youLiteral):
+                
+                #Get the run type of both BV
+                meType = me.getRunType(meLiteral)
+                youType = you.getRunType(youLiteral)
+                
+                #If both are runs of 0's
+                if meType == 0 and youType == 0:
+                    #If me is a longer run than you
+                    if meLenRemaining > youLenRemaining:
                         
-                        #update loopLen
-                        loopLen -= 1
-
-                    #if SELF is longer
+                        ## FIXME :add in appending functions
+                        newWrd = meActiveWord
+                        
+                        #Adds the AND'ed word to the new bitVector
+                        new.appendWord(newWrd)
+                        
+                        #Moves the iterator forward for each bit vector by the run length of me
+                        me.moveIteratorForward(meLenRemaining)
+                        you.moveIteratorForward(meLenRemaining)
+                        
+                    #If they are the same size or you is the longer run
                     else:
-                        #move SELF by the amount of otherLen
-                        self.moveIteratorForward(otherLen)
-
-                        #append OTHER to the new Bit Vector
-                        new.appendWord( other.storage[other.activeWordIndex] )
-
-                        #move OTHER to the next word
-                        other.moveIteratorForward(1)
                         
-                        #update loopLen
-                        loopLen -= otherLen
-
-                    
-            #Case 2: if only SELF is a fill
-            elif msbSelf == 1:
-
-                #find if its a fill of 0's or 1's
-                selfRunType = self.storage[self.activeWordIndex] & ( np.uint64(1) << np.uint64(62) )
-
-                #find the length of the fill
-                selfLen = self.lenRemaining
-
-                #if the fill is of 0's than just write the fill
-                if selfRunType == 0:
-                    other.moveIteratorForward(selfLen)
-                    new.appendWord( self.storage[self.activeWordIndex] )
-                    self.moveIteratorForward(selfLen)
-                    
-                    #update loopLen
-                    loopLen -= selfLen
-
-                #if the fill is of 1's than iterate through 
-                else:
-                    #creating a variable that will help us later
-                    msbOther = 0
-
-                    for i in range(selfLen):
-                        #check to see if we incounter a fill of 0's, break if we do and change the
-                        #the remaining length of SELF with repsect to how many times we have looped
-                        if msbOther == 1 :
-                            break
-
-                        else:
-                            #since anything '&' with 1 is itself we can just add the OTHER word
-                            new.appendWord(other.storage[other.activeWordIndex])
-
-                            #increase activeWordIndex since we know that OTHER is a literal word
-                            other.moveIteratorForward(1)
-
-                            #update OTHER so we can check if we run into a fill word
-                            msbOther = other.storage[other.activeWordIndex] >> np.uint64(63)
-                            
-                            #update self.lenRemaining
-                            self.moveIteratorForward(1)
-                            
-                            loopLen -= 1
-                            
+                        ## FIXME :add in appending functions
+                        newWrd = youActiveWord
+                        
+                        #Adds the AND'ed word to the new bitVector
+                        new.appendWord(newWrd)
+                        
+                        #Moves the iterator forward for each bit vector by the run length of you
+                        me.moveIteratorForward(youLenRemaining)
+                        you.moveIteratorForward(youLenRemaining)
                         
                     
-            #Case 3: if only OTHER is a fill
-            elif msbOther == 1:
-                #find if its a fill of 0's or 1's
-                otherRunType = other.storage[other.activeWordIndex] & ( np.uint64(1) << np.uint64(62) )
-                                
-                #find the length of the fill
-                otherLen = other.lenRemaining
-
-                #if the fill is of 0's than just write the fill and move OTHER to 
-                #the next word
-                if otherRunType == 0:
-                    self.moveIteratorForward(otherLen)
-                    new.appendWord( other.storage[other.activeWordIndex] )
-                    other.moveIteratorForward(otherLen)
+                #If only me is a run of 0's
+                elif meType == 0:
                     
-                    #update loopLen
-                    loopLen -= otherLen
-
-                #if the fill is of 1's than iterate through 
+                    ## FIXME :add appending functions
+                    newWrd = meActiveWord
+                    
+                    #Adds the AND'ed word to the new bitVector
+                    new.appendWord(newWrd)
+                    
+                    #Moves the iterator forward for each bit vector by the run length of me
+                    me.moveIteratorForward(meLenRemaining)
+                    you.moveIteratorForward(meLenRemaining)  
+                    
+                #If only you is a run of 0's
+                elif youType == 0:
+                    
+                    ## FIXME :add appending functions
+                    newWrd = youACtiveWord
+                    
+                    #Adds the AND'ed word to the new bitVector
+                    new.appendWord(newWrd)
+                    
+                    #Moves the iterator forward for each bit vector by the run length of you
+                    me.moveIteratorForward(youLenRemaining)
+                    you.moveIteratorForward(youLenRemaining) 
+                    
+                #If both are runs of 1's
                 else:
-                    #creating a variable that will help us later
-                    msbSelf = 0
-
-                    for i in range(otherLen):
-                        #check to see if we incounter a fill of 0's, break if we do and change the
-                        #the remaining length of OTHER with repsect to how many times we have looped
-                        if msbSelf == 1 :
-                            break
-
-                        else:
-                            #since anything '&' with 1 is itself we can just add the SELF word
-                            new.appendWord(self.storage[self.activeWordIndex])
-
-                            #increase activeWordIndex since we know that SELF is a literal word
-                            self.moveIteratorForward(1)
-                            
-                            #update loopLen
-                            loopLen -= 1 
-
-                            #update SELF so we can check if we run into a fill word
-                            msbSelf = self.storage[self.activeWordIndex] >> np.uint64(63)                             
-                            
-                            #update other.lenRemaining
-                            other.moveIteratorForward(1)
                     
-
-            #Case 4: if both are literals
+                    if meLenRemaining > youLenRemaining:
+                        
+                        ## FIXME :add in appending functions
+                        
+                        #Adds the AND'ed word to the new bitVector
+                        new.appendWord(newWrd)
+                        
+                        #Moves the iterator forward for each bit vector by the run length of you
+                        me.moveIteratorForward(youLenRemaining)
+                        you.moveIteratorForward(youLenRemaining)
+                        
+                    #If they are the same size or you is the longer run
+                    else:
+                        
+                        ## FIXME :add in appending functions
+                        
+                        #Adds the AND'ed word to the new bitVector
+                        new.appendWord(newWrd)
+                        
+                        #Moves the iterator forward for each bit vector by the run length of me
+                        me.moveIteratorForward(meLenRemaining)
+                        you.moveIteratorForward(meLenRemaining)
+                    
+            #Case 3: One is literal and one is run
             else:
-                #since both are literal we can just do a bitwise '&' on them and store that into our new Bit Vector
-                new.appendWord( self.storage[self.activeWordIndex] & other.storage[other.activeWord] )
-
-                #move onto the next word
-                self.moveIteratorForward(1)
-                other.moveIteratorForward(1)
                 
-                #update loopLen
-                loopLen -= 1
-
-
-
-
+                #If me is the run
+                if (not meLiteral):
+                    #Get the run type of me
+                    meType = me.getRunType(meLiteral)
+                    
+                    #If me is a run of 0's append the run of 0's and iterate by meLenRemaining
+                    if meType == 0:
+                        
+                        ## FIXME :append me 
+                        
+                        #Adds the AND'ed word to the new bitVector
+                        new.appendWord(newWrd)
+                        
+                        #Iterate both by the length of the run of 0's
+                        me.moveIteratorForward(meLenRemaining)
+                        you.moveIteratorForward(meLenRemaining)
+                    
+                    #Else me is a run of 1's and we should append the literal and iterate both by one word
+                    else:
+                        
+                        ## FIXME :append literal word
+                        
+                        #Adds the AND'ed word to the new bitVector
+                        new.appendWord(newWrd)
+                        
+                        #Iterate both to the next word
+                        me.moveIteratorForward(1)
+                        you.moveIteratorForward(1)
+                    
+                #If you is the run
+                else:
+                    #Get the run type of you
+                    youType = you.getRunType(youLiteral)
+                    
+                    #If me is a run of 0's append the run of 0's and iterate by meLenRemaining
+                    if youType == 0:
+                        
+                        ## FIXME :append me 
+                        
+                        #Adds the AND'ed word to the new bitVector
+                        new.appendWord(newWrd)
+                        
+                        #Iterate both by the length of the run of 0's
+                        me.moveIteratorForward(youLenRemaining)
+                        you.moveIteratorForward(youLenRemaining)
+                        
+                    
+                    #Else you is a run of 1's and we should append the literal and iterate both by one word
+                    else:
+                        
+                        ## FIXME :append literal word
+                        
+                        #Adds the AND'ed word to the new bitVector
+                        new.appendWord(newWrd)
+                        
+                        #Iterate both to the next word 
+                        me.moveIteratorForward(1)
+                        you.moveIteratorForward(1)
+                        
