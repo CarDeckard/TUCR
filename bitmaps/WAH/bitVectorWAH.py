@@ -359,8 +359,7 @@ class bitVectorWAH(object):
                 else:
                     #Get the run type of you
                     youType = you.getRunType(youLiteral)
-                    
-<<<<<<< HEAD
+                
                     #If me is a run of 0's append the run of 0's and iterate by meLenRemaining
                     if youType == 0:
                         
@@ -386,21 +385,4 @@ class bitVectorWAH(object):
                         me.moveIteratorForward(1)
                         you.moveIteratorForward(1)
                         
-=======
 
-            #Case 4: if both are literals
-            else:
-                #since both are literal we can just do a bitwise '&' on them and store that into our new Bit Vector
-                new.appendWord( self.storage[self.activeWordIndex] & other.storage[other.activeWordIndex] )
-
-                #move onto the next word
-                self.moveIteratorForward(1)
-                other.moveIteratorForward(1)
-                
-                #update loopLen
-                loopLen -= 1
-
-
-
-
->>>>>>> 96a10f74464c231a4dde8a5908973c7452617a5b
