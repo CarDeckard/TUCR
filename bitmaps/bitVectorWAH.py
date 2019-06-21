@@ -46,7 +46,6 @@ class bitVector:
                 totalLength += 1
         return totalLength
 
-
     def printBitVector(self):
         for i in self.storage:
             print np.binary_repr(i, width = 64)
@@ -90,6 +89,7 @@ class bitVector:
 
     def appendRun(self, runType, length):
     
+    
         word = np.uint64(1) << np.uint64(63)
         word += np.uint64(runType) << np.uint64(62)
         word += length
@@ -114,7 +114,7 @@ class bitVector:
             self.storage[self.activeWordIndex] = word
             
             self.activeWordIndex += 1
-    
+
     #######################################################################
     #                           Methods                                   #
     #######################################################################
@@ -382,7 +382,6 @@ class bitVector:
                         self.moveIteratorForward(other.lenRemaining)
                         other.moveIteratorForward(other.lenRemaining)
                     
-                
     def AND(self, other):
         ######### REMINDER #########
         #anything '&' with 0 is zero
