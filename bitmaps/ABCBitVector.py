@@ -1,7 +1,8 @@
-from abc import ABC, astractmethod
+from abc import ABC, abstractmethod
 
 class ABCBitVector(ABC):
-    @abc.abstractmethod    
+    
+    @ABC.abstractmethod    
     def AND(self, other):
         pass
     
@@ -11,7 +12,7 @@ class ABCBitVector(ABC):
     def OR(self, other):
         pass
     
-    def appendWord(self, other):
+    def append(self, other):
         pass
         
         
