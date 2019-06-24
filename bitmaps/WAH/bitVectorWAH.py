@@ -209,10 +209,15 @@ class bitVectorWAH(ABCBitVector):
         return bitVectorWAH(new)
                     
     def AND(self, other):
-        ############ REMINDER #############
-        #   anything '&' with 0 is zero   #
-        #anything '&' with 1 is that thing#
-        ###################################
+        
+                ########## AND Table #########
+                # A # B ################# Z ##
+                #---------------------------##
+                # 0 # 0 ################# 0 ##
+                # 0 # 1 ################# 0 ##
+                # 1 # 0 ################# 0 ##
+                # 1 # 1 ################# 1 ##
+                ############################## 
 
         #Checks if Bit Vectors are same size (throws error if not)
         if self.baseStorage.totalLength != other.wahStorage.totalLength:
