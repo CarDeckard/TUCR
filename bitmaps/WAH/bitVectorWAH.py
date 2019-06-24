@@ -207,24 +207,40 @@ class bitVectorWAH(ABCBitVector):
                 elif youLiteral:
                     #Determines run type and length
                     meRunType = me.wahStorage.getRunType(meActiveWord)
+<<<<<<< HEAD
                     meLength = me.wahStorage.getRunLen(meActiveWord)
 
                     if meRunType == 0:
                         appendLength = 1
+=======
+                    if meRunType == 0:
+>>>>>>> 8b5b1180d683c380d61200de2b5b8cb2ce17b23b
                         new.appendRun(youActiveWord)
                     else:
                         appendLength = meLength
                         new.appendWord(1, appendLength)
 
                 #Moves iterator forward for each bitVector
+<<<<<<< HEAD
                 me.moveIteratorForward(appendLength)
                 you.moveIteratorForward(appendLength)
+=======
+                me.moveIteratorForward(1)
+                you.moveIteratorForward(1)
+                
+        return bitVectorWAH(new)
+>>>>>>> 8b5b1180d683c380d61200de2b5b8cb2ce17b23b
                     
     def AND(self, other):
-        ############ REMINDER #############
-        #   anything '&' with 0 is zero   #
-        #anything '&' with 1 is that thing#
-        ###################################
+        
+                ########## AND Table #########
+                # A # B ################# Z ##
+                #---------------------------##
+                # 0 # 0 ################# 0 ##
+                # 0 # 1 ################# 0 ##
+                # 1 # 0 ################# 0 ##
+                # 1 # 1 ################# 1 ##
+                ############################## 
 
         #Checks if Bit Vectors are same size (throws error if not)
         if self.baseStorage.totalLength != other.wahStorage.totalLength:
@@ -416,3 +432,4 @@ if __name__ == "__main__":
         a.append(0)
     a.append(1)
     print a
+>>>>>>> dae91577b0c6235cfd0093d4a95dfe6dea7dace7
