@@ -197,7 +197,7 @@ class bitVectorWAH(ABCBitVector):
                 #If you is literal (me is run)
                 elif youLiteral:
                     meRunType = me.wahStorage.getRunType(meActiveWord)
-                    if meRunType = 0:
+                    if meRunType == 0:
                         new.appendRun(youActiveWord)
                     else:
                         new.appendWord(1, 1)
@@ -205,6 +205,8 @@ class bitVectorWAH(ABCBitVector):
                 #Moves iterator forward for each bitVector
                 me.moveIteratorForward(1)
                 you.moveIteratorForward(1)
+                
+        return bitVectorWAH(new)
                     
     def AND(self, other):
         ############ REMINDER #############
@@ -368,11 +370,7 @@ class bitVectorWAH(ABCBitVector):
                     #Get the run type of you
                     youType = you.getRunType(youLiteral)
                 
-<<<<<<< HEAD
-                    #If me is a run of 0's append the run of 0's and iterate by meLenRemaining
-=======
                     #If you is a run of 0's append the run of 0's and iterate by meLenRemaining
->>>>>>> dae91577b0c6235cfd0093d4a95dfe6dea7dace7
                     if youType == 0:
                         
                         newWrd = youActiveWord 
@@ -397,23 +395,6 @@ class bitVectorWAH(ABCBitVector):
                         me.moveIteratorForward(1)
                         you.moveIteratorForward(1)
                         
-<<<<<<< HEAD
-
-            #Case 4: if both are literals
-            else:
-                #since both are literal we can just do a bitwise '&' on them and store that into our new Bit Vector
-                new.appendWord( self.storage[self.activeWordIndex] & other.storage[other.activeWordIndex] )
-
-                #move onto the next word
-                self.moveIteratorForward(1)
-                other.moveIteratorForward(1)
-                
-                #update loopLen
-                loopLen -= 1
-
-
-
-=======
         return bitVectorWAH(new)
 
 if __name__ == "__main__":
