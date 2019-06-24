@@ -5,13 +5,15 @@ from WAHStorageWordIterator import WAHStorageWordIterator
 class bitVectorWAH(object):
     
     ## Initialize the bitVector with an appropriate storage.
-    def __init__(self, wahStorage = WAHStorageWordBuilder()):
+    def __init__(self, wahStorage = WAHStorageWordBitBuilder()):
         self.wahStorage = wahStorage
 
     #######################################################################
     #                         Helper Functions                            #
     #######################################################################
-    
+    def append(self,bit):
+        self.wahStorage.append(bit)
+        
     ## NOTE: I partially modified this, to use the new iterator. You need to fix the rest.
     def xor(self, other):
 
@@ -109,9 +111,7 @@ class bitVectorWAH(object):
                     else:
                         new.appendWord(~(youActiveWord))
                     
-            
-        #Sets the bitVector's storage equal to the XOR'ed bitVector
-        self.storage = new.storage
+        return bitVectorWAH(new)
 
     ## FIXME: I have not modified this to use the new iterator. You need to do so. See xor function for hints.
     def Or(self, other):
@@ -216,7 +216,6 @@ class bitVectorWAH(object):
                         
                         loopLen -= other.lenRemaining
                     
-    ## FIXME: I have not modified this to use the new iterator. You need to do so. See xor function for hints.
     def AND(self, other):
         ############ REMINDER #############
         #   anything '&' with 0 is zero   #
@@ -241,8 +240,11 @@ class bitVectorWAH(object):
             meLiteral = me.wahStorage.isLiteral(meActiveWord)
             youLiteral = you.wahStorage.isLiteral(youActiveWord)
             
+            #
             #Case 1: Both are literals
+            #
             if meLiteral and youLiteral:
+                
                 #AND operation done between the two current words
                 newWrd = meActiveWord & youActiveWord
                 #Adds the AND'ed word to the new bitVector
@@ -252,7 +254,9 @@ class bitVectorWAH(object):
                 me.moveIteratorForward(1)
                 you.moveIteratorForward(1)
             
+            #
             #Case 2: Both are fills
+            #
             elif (not meLiteral) and (not youLiteral):
                 
                 #Get the run type of both BV
@@ -264,7 +268,6 @@ class bitVectorWAH(object):
                     #If me is a longer run than you
                     if meLenRemaining > youLenRemaining:
                         
-                        ## FIXME :add in appending functions
                         newWrd = meActiveWord
                         
                         #Adds the AND'ed word to the new bitVector
@@ -277,7 +280,6 @@ class bitVectorWAH(object):
                     #If they are the same size or you is the longer run
                     else:
                         
-                        ## FIXME :add in appending functions
                         newWrd = youActiveWord
                         
                         #Adds the AND'ed word to the new bitVector
@@ -291,7 +293,6 @@ class bitVectorWAH(object):
                 #If only me is a run of 0's
                 elif meType == 0:
                     
-                    ## FIXME :add appending functions
                     newWrd = meActiveWord
                     
                     #Adds the AND'ed word to the new bitVector
@@ -304,8 +305,7 @@ class bitVectorWAH(object):
                 #If only you is a run of 0's
                 elif youType == 0:
                     
-                    ## FIXME :add appending functions
-                    newWrd = youACtiveWord
+                    newWrd = youActiveWord
                     
                     #Adds the AND'ed word to the new bitVector
                     new.appendWord(newWrd)
@@ -319,7 +319,7 @@ class bitVectorWAH(object):
                     
                     if meLenRemaining > youLenRemaining:
                         
-                        ## FIXME :add in appending functions
+                        newWrd = youActiveWord
                         
                         #Adds the AND'ed word to the new bitVector
                         new.appendWord(newWrd)
@@ -331,7 +331,7 @@ class bitVectorWAH(object):
                     #If they are the same size or you is the longer run
                     else:
                         
-                        ## FIXME :add in appending functions
+                        newWrd = meActiveWord
                         
                         #Adds the AND'ed word to the new bitVector
                         new.appendWord(newWrd)
@@ -339,8 +339,9 @@ class bitVectorWAH(object):
                         #Moves the iterator forward for each bit vector by the run length of me
                         me.moveIteratorForward(meLenRemaining)
                         you.moveIteratorForward(meLenRemaining)
-                    
+            #      
             #Case 3: One is literal and one is run
+            #
             else:
                 
                 #If me is the run
@@ -351,7 +352,7 @@ class bitVectorWAH(object):
                     #If me is a run of 0's append the run of 0's and iterate by meLenRemaining
                     if meType == 0:
                         
-                        ## FIXME :append me 
+                        newWrd = meActiveWord 
                         
                         #Adds the AND'ed word to the new bitVector
                         new.appendWord(newWrd)
@@ -363,7 +364,7 @@ class bitVectorWAH(object):
                     #Else me is a run of 1's and we should append the literal and iterate both by one word
                     else:
                         
-                        ## FIXME :append literal word
+                        newWrd = youActiveWord
                         
                         #Adds the AND'ed word to the new bitVector
                         new.appendWord(newWrd)
@@ -377,10 +378,10 @@ class bitVectorWAH(object):
                     #Get the run type of you
                     youType = you.getRunType(youLiteral)
                 
-                    #If me is a run of 0's append the run of 0's and iterate by meLenRemaining
+                    #If you is a run of 0's append the run of 0's and iterate by meLenRemaining
                     if youType == 0:
                         
-                        ## FIXME :append me 
+                        newWrd = youActiveWord 
                         
                         #Adds the AND'ed word to the new bitVector
                         new.appendWord(newWrd)
@@ -393,7 +394,7 @@ class bitVectorWAH(object):
                     #Else you is a run of 1's and we should append the literal and iterate both by one word
                     else:
                         
-                        ## FIXME :append literal word
+                        newWrd = meActiveWord
                         
                         #Adds the AND'ed word to the new bitVector
                         new.appendWord(newWrd)
@@ -402,4 +403,5 @@ class bitVectorWAH(object):
                         me.moveIteratorForward(1)
                         you.moveIteratorForward(1)
                         
+        return bitVectorWAH(new)
 
