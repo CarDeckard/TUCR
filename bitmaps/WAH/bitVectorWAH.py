@@ -1,21 +1,23 @@
 import numpy as np
 from WAHStorageWordBuilder import WAHStorageWordBuilder
+from WAHStorageBitBuilder import WAHStorageBitBuilder
+
 from WAHStorageWordIterator import WAHStorageWordIterator
 
-class bitVectorWAH(object):
+class bitVectorWAH(ABCBitVector):
     
     ## Initialize the bitVector with an appropriate storage.
-    def __init__(self, wahStorage = WAHStorageWordBitBuilder()):
-        self.wahStorage = wahStorage
+    def __init__(self, wahStorage = WAHStorageBitBuilder()):
+        self.baseStorage = wahStorage
 
     #######################################################################
     #                         Helper Functions                            #
     #######################################################################
     def append(self,bit):
-        self.wahStorage.append(bit)
+        self.baseStorage.append(bit)
         
     ## NOTE: I partially modified this, to use the new iterator. You need to fix the rest.
-    def xor(self, other):
+    def XOR(self, other):
 
         ##########XOR Table##########
         # A # B ################ Z ##
@@ -27,11 +29,11 @@ class bitVectorWAH(object):
         #############################        
         
         #Checks if Bit Vectors are same size (throws error if not)
-        if self.wahStorage.totalLength != other.wahStorage.totalLength:
+        if self.baseStorage.totalLength != other.wahStorage.totalLength:
             raise Exception("Not the same size.")
         
         # These are the iterators which
-        me = WAHStorageWordIterator(self.wahStorage)
+        me = WAHStorageWordIterator(self.baseStorage)
         you = WAHStorageWordIterator(other.wahStorage)
 
         #Creates new bitVector to hold xor operation
@@ -111,7 +113,7 @@ class bitVectorWAH(object):
         return bitVectorWAH(new)
 
     ## FIXME: I have not modified this to use the new iterator. You need to do so. See xor function for hints.
-    def Or(self, other):
+    def OR(self, other):
         
                 ########## OR Table #########
                 # A # B ################ Z ##
@@ -123,11 +125,11 @@ class bitVectorWAH(object):
                 #############################  
 
         #Checks if Bit Vectors are same size (throws error if not)
-        if self.wahStorage.totalLength != other.wahStorage.totalLength:
+        if self.baseStorage.totalLength != other.wahStorage.totalLength:
             raise Exception("Not the same size.")
 
         # These are the iterators which
-        me = WAHStorageWordIterator(self.wahStorage)
+        me = WAHStorageWordIterator(self.baseStorage)
         you = WAHStorageWordIterator(other.wahStorage)
 
         #Creates new bitVector to hold or operation
@@ -200,11 +202,11 @@ class bitVectorWAH(object):
         ###################################
 
         #Checks if Bit Vectors are same size (throws error if not)
-        if self.wahStorage.totalLength != other.wahStorage.totalLength:
+        if self.baseStorage.totalLength != other.wahStorage.totalLength:
             raise Exception("Not the same size.")
         
         # These are the iterators which
-        me = WAHStorageWordIterator(self.wahStorage)
+        me = WAHStorageWordIterator(self.baseStorage)
         you = WAHStorageWordIterator(other.wahStorage)
 
         #Creates new bitVector to hold xor operation
@@ -382,3 +384,10 @@ class bitVectorWAH(object):
                         
         return bitVectorWAH(new)
 
+if __name__ == "__main__":
+    a = bitVectorWAH()
+    a.append(1)
+    for i in range(10):
+        a.append(0)
+    a.append(1)
+    print a
