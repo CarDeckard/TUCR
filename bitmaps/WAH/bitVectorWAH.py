@@ -409,4 +409,3 @@ if __name__ == "__main__":
         a.append(0)
     a.append(1)
     print a
->>>>>>> dae91577b0c6235cfd0093d4a95dfe6dea7dace7
