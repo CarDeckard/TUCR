@@ -98,6 +98,7 @@ class bitVectorWAH(object):
                         new.appendRun(0,1)
                     else:
                         new.appendWord(~(meActiveWord))
+                #If you is literal (me is run)
                 if youLiteral:
                     meRunType = me.wahStorage.getRunType(meActiveWord)
                     
@@ -171,7 +172,7 @@ class bitVectorWAH(object):
                         appendLength = meLength
                 
                 #Compares runtypes and decides what to append
-                if meRunType == youRunType:
+                if meRunType == 0 and youRunType == 0:
                     new.appendRun(0, appendLength)
                 else:
                     new.appendRun(1, appendLength)
@@ -186,12 +187,22 @@ class bitVectorWAH(object):
                 #If me is literal (you is run)
                 if meLiteral:
                     youRunType = you.wahStorage.getRunType(youActiveWord)
-
                     if youRunType == 0:
-                        new.appendRun(0, 1)
+                        new.appendWord(meActiveWord)
                     else:
-                        new.appendWord(~(me))
-                        
+                        new.appendRun(1, 1)
+
+                #If you is literal (me is run)
+                elif youLiteral:
+                    meRunType = me.wahStorage.getRunType(meActiveWord)
+                    if meRunType = 0:
+                        new.appendRun(youActiveWord)
+                    else:
+                        new.appendWord(1, 1)
+
+                #Moves iterator forward for each bitVector
+                me.moveIteratorForward(1)
+                you.moveIteratorForward(1)
                     
     ## FIXME: I have not modified this to use the new iterator. You need to do so. See xor function for hints.
     def AND(self, other):
