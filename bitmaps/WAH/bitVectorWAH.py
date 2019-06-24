@@ -207,29 +207,21 @@ class bitVectorWAH(ABCBitVector):
                 elif youLiteral:
                     #Determines run type and length
                     meRunType = me.wahStorage.getRunType(meActiveWord)
-<<<<<<< HEAD
                     meLength = me.wahStorage.getRunLen(meActiveWord)
 
                     if meRunType == 0:
                         appendLength = 1
-=======
                     if meRunType == 0:
->>>>>>> 8b5b1180d683c380d61200de2b5b8cb2ce17b23b
                         new.appendRun(youActiveWord)
                     else:
                         appendLength = meLength
                         new.appendWord(1, appendLength)
 
                 #Moves iterator forward for each bitVector
-<<<<<<< HEAD
                 me.moveIteratorForward(appendLength)
                 you.moveIteratorForward(appendLength)
-=======
-                me.moveIteratorForward(1)
-                you.moveIteratorForward(1)
-                
+
         return bitVectorWAH(new)
->>>>>>> 8b5b1180d683c380d61200de2b5b8cb2ce17b23b
                     
     def AND(self, other):
         
@@ -432,4 +424,3 @@ if __name__ == "__main__":
         a.append(0)
     a.append(1)
     print a
->>>>>>> dae91577b0c6235cfd0093d4a95dfe6dea7dace7
