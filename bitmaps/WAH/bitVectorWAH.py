@@ -179,7 +179,11 @@ class bitVectorWAH(ABCBitVector):
                 #Compares runtypes and decides what to append
                 if meRunType == 0 and youRunType == 0:
                     new.appendRun(0, appendLength)
-                else:
+                elif meRunType == 1 and youRunType == 0:
+                    appendLength = meLength
+                    new.appendRun(1, meLength)
+                elif meRunType == 0 and youRunType == 1:
+                    appendLength = youLength
                     new.appendRun(1, appendLength)
 
                 #Move iterator by the smaller size
@@ -191,24 +195,35 @@ class bitVectorWAH(ABCBitVector):
             else:
                 #If me is literal (you is run)
                 if meLiteral:
+                    #Determines run type and length
                     youRunType = you.wahStorage.getRunType(youActiveWord)
+                    youLength = you.wahStorage.getRunLen(youActiveWord)
+
                     if youRunType == 0:
+                        appendLength = 1
                         new.appendWord(meActiveWord)
                     else:
-                        new.appendRun(1, 1)
+                        appendLength = youLength
+                        new.appendRun(1, appendLength)
 
                 #If you is literal (me is run)
                 elif youLiteral:
+                    #Determines run type and length
                     meRunType = me.wahStorage.getRunType(meActiveWord)
+                    meLength = me.wahStorage.getRunLen(meActiveWord)
+
+                    if meRunType == 0:
+                        appendLength = 1
                     if meRunType == 0:
                         new.appendRun(youActiveWord)
                     else:
-                        new.appendWord(1, 1)
+                        appendLength = meLength
+                        new.appendWord(1, appendLength)
 
                 #Moves iterator forward for each bitVector
-                me.moveIteratorForward(1)
-                you.moveIteratorForward(1)
-                
+                me.moveIteratorForward(appendLength)
+                you.moveIteratorForward(appendLength)
+
         return bitVectorWAH(new)
                     
     def AND(self, other):
