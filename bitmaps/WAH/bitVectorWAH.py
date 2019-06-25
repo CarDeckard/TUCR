@@ -19,7 +19,6 @@ class bitVectorWAH(ABCBitVector):
     def append(self,bit):
         self.baseStorage.append(bit)
         
-    ## NOTE: I partially modified this, to use the new iterator. You need to fix the rest.
     def XOR(self, other):
 
         ##########XOR Table##########
@@ -32,12 +31,12 @@ class bitVectorWAH(ABCBitVector):
         #############################        
         
         #Checks if Bit Vectors are same size (throws error if not)
-        if self.baseStorage.totalLength != other.wahStorage.totalLength:
+        if self.baseStorage.totalLength != other.baseStorage.totalLength:
             raise Exception("Not the same size.")
         
         # These are the iterators which
         me = WAHStorageWordIterator(self.baseStorage)
-        you = WAHStorageWordIterator(other.wahStorage)
+        you = WAHStorageWordIterator(other.baseStorage)
 
         #Creates new bitVector to hold xor operation
         new = WAHStorageWordBuilder()
@@ -46,11 +45,13 @@ class bitVectorWAH(ABCBitVector):
             (meActiveWord, meLenRemaining) = me.current()
             (youActiveWord, youLenRemaining) = you.current()
             
-            meLiteral = me.wahStorage.isLiteral(meActiveWord)
-            youLiteral = you.wahStorage.isLiteral(youActiveWord)
+            meLiteral = me.baseStorage.isLiteral(meActiveWord)
+            youLiteral = you.baseStorage.isLiteral(youActiveWord)
+        
             
             #Case 1: Both are literals
             if meLiteral and youLiteral:
+                
                 #XOR operation done between the two current words
                 newWrd = meActiveWord ^ youActiveWord
                 #Adds the XOR'ed word to the new bitVector
@@ -71,11 +72,11 @@ class bitVectorWAH(ABCBitVector):
                 # 1 # 1 ################ 0 ##
                 #############################
                 #Gets the run types for me and you to determine the fill that will be appended
-                meRunType = me.wahStorage.getRunType(meActiveWord)
-                youRunType = you.wahStorage.getRunType(youActiveWord)
+                meRunType = me.baseStorage.getRunType(meActiveWord)
+                youRunType = you.baseStorage.getRunType(youActiveWord)
                 #Gets length of current word                
-                meLength = me.wahStorage.getRunLen(meActiveWord)
-                youLength = you.wahStorage.getRunLen(youActiveWord)
+                meLength = me.baseStorage.getRunLen(meActiveWord)
+                youLength = you.baseStorage.getRunLen(youActiveWord)
                 #Compares length then determines how to iterate
                 if meLength == youLength:
                     appendLength = meLength
@@ -99,7 +100,7 @@ class bitVectorWAH(ABCBitVector):
             else:
                 #If me is literal (you is run)
                 if meLiteral:
-                    youRunType = you.wahStorage.getRunType(youActiveWord)
+                    youRunType = you.baseStorage.getRunType(youActiveWord)
                     
                     if youRunType == 0:
                         new.appendRun(0,1)
@@ -107,7 +108,7 @@ class bitVectorWAH(ABCBitVector):
                         new.appendWord(~(meActiveWord))
                 #If you is literal (me is run)
                 if youLiteral:
-                    meRunType = me.wahStorage.getRunType(meActiveWord)
+                    meRunType = me.baseStorage.getRunType(meActiveWord)
                     
                     if meRunType == 0:
                         new.appendRun(0,1)
@@ -116,7 +117,6 @@ class bitVectorWAH(ABCBitVector):
                     
         return bitVectorWAH(new)
 
-    ## FIXME: I have not modified this to use the new iterator. You need to do so. See xor function for hints.
     def OR(self, other):
         
                 ########## OR Table #########
@@ -129,12 +129,12 @@ class bitVectorWAH(ABCBitVector):
                 #############################  
 
         #Checks if Bit Vectors are same size (throws error if not)
-        if self.baseStorage.totalLength != other.wahStorage.totalLength:
+        if self.baseStorage.totalLength != other.baseStorage.totalLength:
             raise Exception("Not the same size.")
 
         # These are the iterators which
         me = WAHStorageWordIterator(self.baseStorage)
-        you = WAHStorageWordIterator(other.wahStorage)
+        you = WAHStorageWordIterator(other.baseStorage)
 
         #Creates new bitVector to hold or operation
         new = WAHStorageWordBuilder()
@@ -143,11 +143,11 @@ class bitVectorWAH(ABCBitVector):
             (meActiveWord, meLenRemaining) = me.current()
             (youActiveWord, youLenRemaining) = you.current()
             
-            meLiteral = me.wahStorage.isLiteral(meActiveWord)
-            youLiteral = you.wahStorage.isLiteral(youActiveWord) 
+            meLiteral = me.baseStorage.isLiteral(meActiveWord)
+            youLiteral = you.baseStorage.isLiteral(youActiveWord) 
 
             #Case 1: Both are literals
-            if meLiteral and youLiteral:
+            if meLiteral and youLiteral:                
                 #OR operation done between  the two current words
                 newWrd = meActiveWord | youActiveWord
                 #adds the OR'ed word to the new bitVector
@@ -160,12 +160,12 @@ class bitVectorWAH(ABCBitVector):
 
             elif (not meLiteral) and (not youLiteral):
                 #gets the run types for me and you to determine the fill that will be appended
-                meRunType = me.wahStorage.getRunType(meActiveWord)
-                youRunType = you.wahStorage.getRunType(youActiveWord)
+                meRunType = me.baseStorage.getRunType(meActiveWord)
+                youRunType = you.baseStorage.getRunType(youActiveWord)
 
                 #Gets the length of the current word
-                meLength = me.wahStorage.getRunLen(meActiveWord)
-                youLength = you.wahStorage.getRunLen(youActiveWord)
+                meLength = me.baseStorage.getRunLen(meActiveWord)
+                youLength = you.baseStorage.getRunLen(youActiveWord)
 
                 #Compares length and then determines how to iterate
                 if meLength == youLength:
@@ -196,8 +196,8 @@ class bitVectorWAH(ABCBitVector):
                 #If me is literal (you is run)
                 if meLiteral:
                     #Determines run type and length
-                    youRunType = you.wahStorage.getRunType(youActiveWord)
-                    youLength = you.wahStorage.getRunLen(youActiveWord)
+                    youRunType = you.baseStorage.getRunType(youActiveWord)
+                    youLength = you.baseStorage.getRunLen(youActiveWord)
 
                     if youRunType == 0:
                         appendLength = 1
@@ -209,8 +209,8 @@ class bitVectorWAH(ABCBitVector):
                 #If you is literal (me is run)
                 elif youLiteral:
                     #Determines run type and length
-                    meRunType = me.wahStorage.getRunType(meActiveWord)
-                    meLength = me.wahStorage.getRunLen(meActiveWord)
+                    meRunType = me.baseStorage.getRunType(meActiveWord)
+                    meLength = me.baseStorage.getRunLen(meActiveWord)
 
                     if meRunType == 0:
                         appendLength = 1
@@ -238,17 +238,24 @@ class bitVectorWAH(ABCBitVector):
                 ############################## 
 
         #Checks if Bit Vectors are same size (throws error if not)
-        if self.baseStorage.totalLength != other.wahStorage.totalLength:
+        if self.baseStorage.totalLength != other.baseStorage.totalLength:
             raise Exception("Not the same size.")
         
         # These are the iterators which
         me = WAHStorageWordIterator(self.baseStorage)
-        you = WAHStorageWordIterator(other.wahStorage)
+        you = WAHStorageWordIterator(other.baseStorage)
 
         #Creates new bitVector to hold xor operation
         new = WAHStorageWordBuilder()        
+        
+        print 'check 1'
+        print me.isDone()
+        print you.isDone()
 
-        while not ( me.isDone() or you.isDone() ):
+        while ( me.isDone() or you.isDone() ):
+            
+            print 'check 2'
+            
             (meActiveWord, meLenRemaining) = me.current()
             (youActiveWord, youLenRemaining) = you.current()
             
@@ -259,6 +266,8 @@ class bitVectorWAH(ABCBitVector):
             #Case 1: Both are literals
             #
             if meLiteral and youLiteral:
+                
+                print 'check 3'
                 
                 #AND operation done between the two current words
                 newWrd = meActiveWord & youActiveWord
@@ -275,8 +284,8 @@ class bitVectorWAH(ABCBitVector):
             elif (not meLiteral) and (not youLiteral):
                 
                 #Get the run type of both BV
-                meType = me.getRunType(meLiteral)
-                youType = you.getRunType(youLiteral)
+                meType = me.baseStorage.getRunType(meLiteral)
+                youType = you.baseStorage.getRunType(youLiteral)
                 
                 #If both are runs of 0's
                 if meType == 0 and youType == 0:
@@ -362,7 +371,7 @@ class bitVectorWAH(ABCBitVector):
                 #If me is the run
                 if (not meLiteral):
                     #Get the run type of me
-                    meType = me.getRunType(meLiteral)
+                    meType = me.baseStorage.getRunType(meLiteral)
                     
                     #If me is a run of 0's append the run of 0's and iterate by meLenRemaining
                     if meType == 0:
@@ -391,7 +400,7 @@ class bitVectorWAH(ABCBitVector):
                 #If you is the run
                 else:
                     #Get the run type of you
-                    youType = you.getRunType(youLiteral)
+                    youType = you.baseStorage.getRunType(youLiteral)
                 
                     #If you is a run of 0's append the run of 0's and iterate by meLenRemaining
                     if youType == 0:
@@ -421,6 +430,9 @@ class bitVectorWAH(ABCBitVector):
         return bitVectorWAH(new)
 
 if __name__ == "__main__":
+    print "Running some testing code..."
+    
+    #Test Vector a
     a = bitVectorWAH()
     a.append(1)
     for i in range(10):
@@ -430,6 +442,7 @@ if __name__ == "__main__":
         a.append(0)
     a.append(1)
         
+    #Test Vector b
     b = bitVectorWAH()
     b.append(0)
     b.append(1)
@@ -439,9 +452,13 @@ if __name__ == "__main__":
     for i in range(8):
         b.append(0)
     b.append(1)
+    for i in range(5):
+        b.append(0)
+    b.append(1)
 
     
     print a
     print b
+    #print a.XOR(b)
+    #print a.OR(b)
     print a.AND(b)
-    
