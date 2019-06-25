@@ -474,21 +474,13 @@ if __name__ == "__main__":
         b.append(0)
     b.append(1)
     
-<<<<<<< HEAD
+
     '''
     for i in range(173):
         b.append(1)
     b.append(0)
     b.append(0)
     '''
-=======
-    c = bitVectorWAH()
-    c.add(0)
-    c.add(2)
-    c.add(72)
-    print c
-
->>>>>>> f41dc1331ef32c439217470c626042e1f52c9030
     
     #print a
     #print b
