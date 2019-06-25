@@ -143,8 +143,8 @@ class bitVectorWAH(ABCBitVector):
             (meActiveWord, meLenRemaining) = me.current()
             (youActiveWord, youLenRemaining) = you.current()
             
-            meLiteral = me.baseStorage.isLiteral(meActiveWord)
-            youLiteral = you.baseStorage.isLiteral(youActiveWord) 
+            meLiteral = me.wahStorage.isLiteral(meActiveWord)
+            youLiteral = you.wahStorage.isLiteral(youActiveWord) 
 
             #Case 1: Both are literals
             if meLiteral and youLiteral:                
@@ -245,16 +245,19 @@ class bitVectorWAH(ABCBitVector):
         me = WAHStorageWordIterator(self.baseStorage)
         you = WAHStorageWordIterator(other.baseStorage)
 
-        #Creates new bitVector to hold xor operation
+        #Creates new bitVector to hold AND operation
         new = WAHStorageWordBuilder()        
         
-        print 'check 1'
+        print 'started AND'
         print me.isDone()
         print you.isDone()
+        
+        print self.baseStorage.totalLength
+        print other.baseStorage.totalLength
 
-        while ( me.isDone() or you.isDone() ):
+        while not ( me.isDone() or you.isDone() ):
             
-            print 'check 2'
+            print 'entered while loop'
             
             (meActiveWord, meLenRemaining) = me.current()
             (youActiveWord, youLenRemaining) = you.current()
@@ -267,12 +270,14 @@ class bitVectorWAH(ABCBitVector):
             #
             if meLiteral and youLiteral:
                 
-                print 'check 3'
+                print 'found literals'
                 
                 #AND operation done between the two current words
                 newWrd = meActiveWord & youActiveWord
                 #Adds the AND'ed word to the new bitVector
                 new.appendWord(newWrd)
+                
+                print new
                 
                 #Moves the iterator forward for each bitVector
                 me.moveIteratorForward(1)
@@ -283,9 +288,11 @@ class bitVectorWAH(ABCBitVector):
             #
             elif (not meLiteral) and (not youLiteral):
                 
+                print 'found fills'
+                
                 #Get the run type of both BV
-                meType = me.baseStorage.getRunType(meLiteral)
-                youType = you.baseStorage.getRunType(youLiteral)
+                meType = me.wahStorage.getRunType(meLiteral)
+                youType = you.wahStorage.getRunType(youLiteral)
                 
                 #If both are runs of 0's
                 if meType == 0 and youType == 0:
@@ -427,6 +434,7 @@ class bitVectorWAH(ABCBitVector):
                         me.moveIteratorForward(1)
                         you.moveIteratorForward(1)
                         
+        print 'returning bitvector'
         return bitVectorWAH(new)
 
 if __name__ == "__main__":
@@ -441,6 +449,12 @@ if __name__ == "__main__":
     for i in range(12):
         a.append(0)
     a.append(1)
+    
+    '''
+    for i in range(173):
+        a.append(0)
+    a.append(1)
+    '''
         
     #Test Vector b
     b = bitVectorWAH()
@@ -455,7 +469,13 @@ if __name__ == "__main__":
     for i in range(5):
         b.append(0)
     b.append(1)
-
+    
+    '''
+    for i in range(173):
+        b.append(1)
+    b.append(0)
+    b.append(0)
+    '''
     
     print a
     print b
