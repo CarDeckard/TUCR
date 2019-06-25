@@ -30,7 +30,7 @@ class WAHStorageBitBuilder(WAHStorageWordBuilder):
     
     def appendWord(self,word):
         if self.partialLiteralLength == 0:
-            super(WAHStorageBitBuilder,self).appendWord(word)
+            super(WAHStorageBitBuilder, self).appendWord(word)
         else:
             raise Exception("Cannot append a word right now. Make you have filled out the current one first.")
     
@@ -64,6 +64,17 @@ class WAHStorageBitBuilder(WAHStorageWordBuilder):
             # the following line is correct.
             self.partialLiteralLength = 0
             self.appendWord(self.storage[self.appendWordIndex])
+    
+    ## Sets the specified row to 1. Must be called sequentially.
+    def addSequential(self,row):
+        endRow = self.numRows - 1
+        #print "Adding row %d at the end of %d (%d zeros in between)"%(row,endRow,row-endRow)
+        if endRow >= row:
+            raise Exception("Can't do it. Read the docs.")
+
+        if (row - endRow) > 0:
+            self.appendBits(0,(row - endRow))
+        self.append(1)
     
     ## Represents the compressed bit vector in binary format, marking where the words end.
     def __str__(self):
