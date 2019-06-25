@@ -1,14 +1,17 @@
-import numpy as np
+import sys
+sys.path.append('..')
+from ABCBitVector import ABCBitVector
 from WAHStorageWordBuilder import WAHStorageWordBuilder
 from WAHStorageBitBuilder import WAHStorageBitBuilder
-
 from WAHStorageWordIterator import WAHStorageWordIterator
 
 class bitVectorWAH(ABCBitVector):
     
     ## Initialize the bitVector with an appropriate storage.
-    def __init__(self, wahStorage = WAHStorageBitBuilder()):
-        self.baseStorage = wahStorage
+    def __init__(self, wahStorage = None):
+        if wahStorage is None:
+            wahStorage = WAHStorageBitBuilder()
+        super(bitVectorWAH, self).__init__(wahStorage)
 
     #######################################################################
     #                         Helper Functions                            #
@@ -408,4 +411,22 @@ if __name__ == "__main__":
     for i in range(10):
         a.append(0)
     a.append(1)
+    for i in range(12):
+        a.append(0)
+    a.append(1)
+        
+    b = bitVectorWAH()
+    b.append(0)
+    b.append(1)
+    for i in range(7):
+        b.append(0)
+    b.append(1)
+    for i in range(8):
+        b.append(0)
+    b.append(1)
+
+    
     print a
+    print b
+    print a.AND(b)
+    

@@ -11,6 +11,10 @@ from WAHStorage import WAHStorage
 ## This class allows you to build up a storage array one word at a time
 class WAHStorageWordBuilder(WAHStorage):
 
+    def __init__(self, initialSize = 1, wordSizeInBits = 64):
+        # Initialize the storage
+        super(WAHStorageWordBuilder, self).__init__(initialSize,wordSizeInBits)
+        
     ## Make sure that lenInWords can fit in the current storage
     #  @param lenInWords - The compressed size (in words) that is supposed
     #  to fit inside storage. Resizes storage to fit if necessary.
