@@ -68,12 +68,11 @@ class WAHStorageBitBuilder(WAHStorageWordBuilder):
     ## Sets the specified row to 1. Must be called sequentially.
     def addSequential(self,row):
         endRow = self.numRows - 1
-        #print "Adding row %d at the end of %d (%d zeros in between)"%(row,endRow,row-endRow)
         if endRow >= row:
-            raise Exception("Can't do it. Read the docs.")
+            raise Exception("Can't add row %d at the end of %d (%d zeros in between)"%(row,endRow,row-endRow))
 
-        if (row - endRow) > 0:
-            self.appendBits(0,(row - endRow))
+        if ((row - endRow - 1) > 0):
+            self.appendBits(0,(row - endRow - 1))
         self.append(1)
     
     ## Represents the compressed bit vector in binary format, marking where the words end.
@@ -96,6 +95,10 @@ if __name__ == "__main__":
     a.appendBits(0,1)
     a.appendRun(0,3)
     a.appendWord(0)
-    print a
-    a.appendWord((a.dtype(1) << a.literalSizeInBits) - a.dtype(1))
+    #print a
+    #a.appendWord((a.dtype(1) << a.literalSizeInBits) - a.dtype(1))
+    #print a
+    
+    a = WAHStorageBitBuilder()
+    a.addSequential(1)
     print a
