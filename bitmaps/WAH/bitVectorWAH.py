@@ -431,8 +431,7 @@ if __name__ == "__main__":
     aNum = 0
     bNum = 0
     
-    ##REAL TEST VECTORS##
-    #Test Vector a
+    #Literal Word Test Vector a
     a = bitVectorWAH()
     a.append(1)
     for i in range(10):
@@ -442,8 +441,7 @@ if __name__ == "__main__":
         a.append(0)
     a.append(1)
     
-    
-    #Test Vector b
+    #Literal Word Test Vector b
     b = bitVectorWAH()
     b.append(0)
     b.append(1)
@@ -457,6 +455,8 @@ if __name__ == "__main__":
         b.append(0)
     b.append(1)
     
+    
+    # Adds runs to a and b
     for i in range(173):
         a.append(0)
     for i in range(42):
@@ -465,7 +465,6 @@ if __name__ == "__main__":
         a.append(0)
     for i in range(25):
         a.append(1)
-
     for i in range(227):
         b.append(1)
     for i in range(35):
