@@ -49,8 +49,8 @@ class bitVectorWAH(ABCBitVector):
             (meActiveWord, meLenRemaining) = me.current()
             (youActiveWord, youLenRemaining) = you.current()
             
-            meLiteral = me.baseStorage.isLiteral(meActiveWord)
-            youLiteral = you.baseStorage.isLiteral(youActiveWord)
+            meLiteral = me.wahStorage.isLiteral(meActiveWord)
+            youLiteral = you.wahStorage.isLiteral(youActiveWord)
         
             
             #Case 1: Both are literals
@@ -76,11 +76,11 @@ class bitVectorWAH(ABCBitVector):
                 # 1 # 1 ################ 0 ##
                 #############################
                 #Gets the run types for me and you to determine the fill that will be appended
-                meRunType = me.baseStorage.getRunType(meActiveWord)
-                youRunType = you.baseStorage.getRunType(youActiveWord)
+                meRunType = me.wahStorage.getRunType(meActiveWord)
+                youRunType = you.wahStorage.getRunType(youActiveWord)
                 #Gets length of current word                
-                meLength = me.baseStorage.getRunLen(meActiveWord)
-                youLength = you.baseStorage.getRunLen(youActiveWord)
+                meLength = me.wahStorage.getRunLen(meActiveWord)
+                youLength = you.wahStorage.getRunLen(youActiveWord)
                 #Compares length then determines how to iterate
                 if meLength == youLength:
                     appendLength = meLength
@@ -104,12 +104,23 @@ class bitVectorWAH(ABCBitVector):
             else:
                 #If me is literal (you is run)
                 if meLiteral:
-                    youRunType = you.baseStorage.getRunType(youActiveWord)
+                    youRunType = you.wahStorage.getRunType(youActiveWord)
                     
                     if youRunType == 0:
                         new.appendRun(0,1)
                     else:
-                        new.appendWord(~(meActiveWord))
+                        
+                        # XOR with a run of 1's is equivalent to getting the compliment
+                        # of the what is being XOR'ed. We have to make sure that we are
+                        # not touching the most significant bit though because it is
+                        # always going to be a run
+                        newWrd = ~(meActiveWord) & (~(1 << 63))
+                        
+                        new.appendWord(newWrd)
+                    
+                    me.moveIteratorForward(1)
+                    you.moveIteratorForward(1)
+                
                 #If you is literal (me is run)
                 if youLiteral:
                     meRunType = me.baseStorage.getRunType(meActiveWord)
@@ -118,6 +129,8 @@ class bitVectorWAH(ABCBitVector):
                         new.appendRun(0,1)
                     else:
                         new.appendWord(~(youActiveWord))
+                    me.moveIteratorForward(1)
+                    you.moveIteratorForward(1)
                     
         return bitVectorWAH(new)
 
@@ -164,12 +177,12 @@ class bitVectorWAH(ABCBitVector):
 
             elif (not meLiteral) and (not youLiteral):
                 #gets the run types for me and you to determine the fill that will be appended
-                meRunType = me.baseStorage.getRunType(meActiveWord)
-                youRunType = you.baseStorage.getRunType(youActiveWord)
+                meRunType = me.wahStorage.getRunType(meActiveWord)
+                youRunType = you.wahStorage.getRunType(youActiveWord)
 
                 #Gets the length of the current word
-                meLength = me.baseStorage.getRunLen(meActiveWord)
-                youLength = you.baseStorage.getRunLen(youActiveWord)
+                meLength = me.wahStorage.getRunLen(meActiveWord)
+                youLength = you.wahStorage.getRunLen(youActiveWord)
 
                 #Compares length and then determines how to iterate
                 if meLength == youLength:
@@ -251,18 +264,9 @@ class bitVectorWAH(ABCBitVector):
 
         #Creates new bitVector to hold AND operation
         new = WAHStorageWordBuilder()        
-        
-        print 'started AND'
-        print me.isDone()
-        print you.isDone()
-        
-        print self.baseStorage.totalLength
-        print other.baseStorage.totalLength
 
         while not ( me.isDone() or you.isDone() ):
-            
-            print 'entered while loop'
-            
+                        
             (meActiveWord, meLenRemaining) = me.current()
             (youActiveWord, youLenRemaining) = you.current()
             
@@ -273,16 +277,12 @@ class bitVectorWAH(ABCBitVector):
             #Case 1: Both are literals
             #
             if meLiteral and youLiteral:
-                
-                print 'found literals'
-                
+                                
                 #AND operation done between the two current words
                 newWrd = meActiveWord & youActiveWord
                 #Adds the AND'ed word to the new bitVector
                 new.appendWord(newWrd)
-                
-                print new
-                
+                                
                 #Moves the iterator forward for each bitVector
                 me.moveIteratorForward(1)
                 you.moveIteratorForward(1)
@@ -291,22 +291,19 @@ class bitVectorWAH(ABCBitVector):
             #Case 2: Both are fills
             #
             elif (not meLiteral) and (not youLiteral):
-                
-                print 'found fills'
-                
+                                
                 #Get the run type of both BV
                 meType = me.wahStorage.getRunType(meLiteral)
                 youType = you.wahStorage.getRunType(youLiteral)
                 
                 #If both are runs of 0's
                 if meType == 0 and youType == 0:
+                    
                     #If me is a longer run than you
                     if meLenRemaining > youLenRemaining:
-                        
-                        newWrd = meActiveWord
-                        
+                                                
                         #Adds the AND'ed word to the new bitVector
-                        new.appendWord(newWrd)
+                        new.appendRun( meType , meLenRemaining )
                         
                         #Moves the iterator forward for each bit vector by the run length of me
                         me.moveIteratorForward(meLenRemaining)
@@ -314,11 +311,9 @@ class bitVectorWAH(ABCBitVector):
                         
                     #If they are the same size or you is the longer run
                     else:
-                        
-                        newWrd = youActiveWord
-                        
+                                                
                         #Adds the AND'ed word to the new bitVector
-                        new.appendWord(newWrd)
+                        new.appendRun( youType , youLenRemaining )
                         
                         #Moves the iterator forward for each bit vector by the run length of you
                         me.moveIteratorForward(youLenRemaining)
@@ -327,11 +322,9 @@ class bitVectorWAH(ABCBitVector):
                     
                 #If only me is a run of 0's
                 elif meType == 0:
-                    
-                    newWrd = meActiveWord
-                    
-                    #Adds the AND'ed word to the new bitVector
-                    new.appendWord(newWrd)
+                                                            
+                    #Adds the run of 0's to the new bitVector
+                    new.appendRun( meType , meLenRemaining )
                     
                     #Moves the iterator forward for each bit vector by the run length of me
                     me.moveIteratorForward(meLenRemaining)
@@ -339,11 +332,9 @@ class bitVectorWAH(ABCBitVector):
                     
                 #If only you is a run of 0's
                 elif youType == 0:
-                    
-                    newWrd = youActiveWord
-                    
-                    #Adds the AND'ed word to the new bitVector
-                    new.appendWord(newWrd)
+                                                            
+                    #Adds the run of 0's to the new bitVector
+                    new.appendRun( youType , youLenRemaining)
                     
                     #Moves the iterator forward for each bit vector by the run length of you
                     me.moveIteratorForward(youLenRemaining)
@@ -351,13 +342,11 @@ class bitVectorWAH(ABCBitVector):
                     
                 #If both are runs of 1's
                 else:
-                    
+                                        
                     if meLenRemaining > youLenRemaining:
                         
-                        newWrd = youActiveWord
-                        
-                        #Adds the AND'ed word to the new bitVector
-                        new.appendWord(newWrd)
+                        #Adds the run of 1's to the new bitVector
+                        new.appendRun( meType , youLenRemaining)
                         
                         #Moves the iterator forward for each bit vector by the run length of you
                         me.moveIteratorForward(youLenRemaining)
@@ -368,8 +357,8 @@ class bitVectorWAH(ABCBitVector):
                         
                         newWrd = meActiveWord
                         
-                        #Adds the AND'ed word to the new bitVector
-                        new.appendWord(newWrd)
+                        #Adds the run of 1's to the new bitVector
+                        new.appendRun( youType , meLenRemaining)
                         
                         #Moves the iterator forward for each bit vector by the run length of me
                         me.moveIteratorForward(meLenRemaining)
@@ -378,19 +367,18 @@ class bitVectorWAH(ABCBitVector):
             #Case 3: One is literal and one is run
             #
             else:
-                
+        
                 #If me is the run
                 if (not meLiteral):
+                                        
                     #Get the run type of me
-                    meType = me.baseStorage.getRunType(meLiteral)
+                    meType = me.wahStorage.getRunType(meActiveWord)
                     
                     #If me is a run of 0's append the run of 0's and iterate by meLenRemaining
                     if meType == 0:
-                        
-                        newWrd = meActiveWord 
-                        
-                        #Adds the AND'ed word to the new bitVector
-                        new.appendWord(newWrd)
+                                                
+                        #Adds the run of 0's to the new bitVector
+                        new.appendRun( meType , meLenRemaining)
                         
                         #Iterate both by the length of the run of 0's
                         me.moveIteratorForward(meLenRemaining)
@@ -410,16 +398,14 @@ class bitVectorWAH(ABCBitVector):
                     
                 #If you is the run
                 else:
+                                                            
                     #Get the run type of you
-                    youType = you.baseStorage.getRunType(youLiteral)
-                
+                    youType = you.wahStorage.getRunType(youActiveWord)
+                                    
                     #If you is a run of 0's append the run of 0's and iterate by meLenRemaining
                     if youType == 0:
-                        
-                        newWrd = youActiveWord 
-                        
-                        #Adds the AND'ed word to the new bitVector
-                        new.appendWord(newWrd)
+                        #Adds the run of 0's to the new bitVector
+                        new.appendRun( youType , youLenRemaining)
                         
                         #Iterate both by the length of the run of 0's
                         me.moveIteratorForward(youLenRemaining)
@@ -428,7 +414,7 @@ class bitVectorWAH(ABCBitVector):
                     
                     #Else you is a run of 1's and we should append the literal and iterate both by one word
                     else:
-                        
+                                                
                         newWrd = meActiveWord
                         
                         #Adds the AND'ed word to the new bitVector
@@ -438,12 +424,14 @@ class bitVectorWAH(ABCBitVector):
                         me.moveIteratorForward(1)
                         you.moveIteratorForward(1)
                         
-        print 'returning bitvector'
         return bitVectorWAH(new)
 
 if __name__ == "__main__":
     print "Running some testing code..."
+    aNum = 0
+    bNum = 0
     
+    ##REAL TEST VECTORS##
     #Test Vector a
     a = bitVectorWAH()
     a.append(1)
@@ -454,12 +442,7 @@ if __name__ == "__main__":
         a.append(0)
     a.append(1)
     
-    '''
-    for i in range(173):
-        a.append(0)
-    a.append(1)
-    '''
-        
+    
     #Test Vector b
     b = bitVectorWAH()
     b.append(0)
@@ -474,16 +457,24 @@ if __name__ == "__main__":
         b.append(0)
     b.append(1)
     
-
-    '''
     for i in range(173):
+        a.append(0)
+    for i in range(42):
+        a.append(1)
+    for i in range(23):
+        a.append(0)
+    for i in range(25):
+        a.append(1)
+
+    for i in range(227):
         b.append(1)
-    b.append(0)
-    b.append(0)
-    '''
+    for i in range(35):
+        b.append(0)
+    b.append(1)
+
     
-    #print a
-    #print b
-    #print a.XOR(b)
-    #print a.OR(b)
-    #print a.AND(b)
+    print a
+    print b
+    print a.XOR(b)
+    print a.OR(b)
+    print a.AND(b)

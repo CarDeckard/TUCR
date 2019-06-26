@@ -53,7 +53,7 @@ class WAHStorageWordIterator(object):
     
     ## Moves the iterator forward by numWords
     #  @param numWords - The number of words to move.
-    #  @return (active word, length remaining)
+    #  @return (new active word, length remaining) 
     def moveIteratorForward(self,numWords):
         if self.isDone():
             raise StopIteration
@@ -64,7 +64,6 @@ class WAHStorageWordIterator(object):
                 # then lenRemaining == 0 means that we are finished with the current
                 # run or literal, and are ready to move to the next one.
                 if self.lenRemaining == self.wahStorage.dtype(0):
-                    ret = (self.activeWord, self.lenRemaining)
                     
                     # Move to the next word
                     self.activeWordIndex += 1
