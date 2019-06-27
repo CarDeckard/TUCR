@@ -24,8 +24,8 @@ class bitVectorWAH(ABCBitVector):
         self.baseStorage.addSequential(row)
         
         
-    def COUNT(self):
-        # Adds up all of the 1's in the BitVector to find where we have hits
+    def COUNT(self, TYPE):
+        # Adds up all the appearencses of TYPE in the BitVector
         numCount = 0
         
         # Our iterator for this function 
@@ -45,7 +45,7 @@ class bitVectorWAH(ABCBitVector):
                 for i in range(63):
                     bit = ( int(meActiveWord) >> i ) & 1
                     
-                    if bit == 1:
+                    if bit == TYPE:
                         numCount += 1
                         
                 me.moveIteratorForward(1)  
@@ -56,7 +56,7 @@ class bitVectorWAH(ABCBitVector):
                 #If the run is of 1's than add all of the 1's in the run
                 meRunType = me.wahStorage.getRunType(meActiveWord)
                 
-                if meRunType == 1:
+                if meRunType == TYPE:
                     
                     #Since each word can only hold 63 we have 63 times the
                     #length of the fill
@@ -530,5 +530,5 @@ if __name__ == "__main__":
     
     '''
     ##Test COUNT##
-    print b.COUNT()
+    print b.COUNT(1)
     '''
