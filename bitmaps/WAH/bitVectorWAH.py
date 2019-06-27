@@ -23,6 +23,53 @@ class bitVectorWAH(ABCBitVector):
     def add(self,row):
         self.baseStorage.addSequential(row)
         
+        
+    def COUNT(self):
+        # Adds up all of the 1's in the BitVector to find where we have hits
+        numCount = 0
+        
+        # Our iterator for this function 
+        me = WAHStorageWordIterator(self.baseStorage)
+                
+        while not me.isDone():
+                                    
+            (meActiveWord, meLenRemaining) = me.current()
+            
+            meLiteral = me.wahStorage.isLiteral(meActiveWord)
+
+            # If the word is a literal 
+            if meLiteral:
+                
+                #Iterate through every bit one by one and count only if it is 
+                #equal to 1 then move onto the next bit 
+                for i in range(63):
+                    bit = ( int(meActiveWord) >> i ) & 1
+                    
+                    if bit == 1:
+                        numCount += 1
+                        
+                me.moveIteratorForward(1)  
+                
+            # If the word is a fill
+            else:
+                
+                #If the run is of 1's than add all of the 1's in the run
+                meRunType = me.wahStorage.getRunType(meActiveWord)
+                
+                if meRunType == 1:
+                    
+                    #Since each word can only hold 63 we have 63 times the
+                    #length of the fill
+                    numCount += 63 * (meLenRemaining + 1)
+                    
+                me.moveIteratorForward(meLenRemaining + 1)                
+                    
+        return numCount
+                
+        
+    
+    
+        
     def XOR(self, other):
 
         ##########XOR Table##########
@@ -474,6 +521,14 @@ if __name__ == "__main__":
     
     print a
     print b
+    '''
+    ##Test operations##
     print a.XOR(b)
     print a.OR(b)
     print a.AND(b)
+    '''
+    
+    '''
+    ##Test COUNT##
+    print b.COUNT()
+    '''
