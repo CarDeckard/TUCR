@@ -7,6 +7,9 @@ Created on Thu Jun 20 10:47:49 2019
 import numpy as np
 from WAHStorageWordBuilder import WAHStorageWordBuilder
 
+## Note that totalLength only refers to the total number of complete words.
+## does not include partial words.
+## If you want that, then divide numRows by self.wordLengthInBits
 class WAHStorageBitBuilder(WAHStorageWordBuilder):    
     
     def __init__(self, initialSize = 1, wordSizeInBits = 64):

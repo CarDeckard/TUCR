@@ -1,0 +1,15 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+
+[dev-packages]
+Cython = ">=0.21"
+hypothesis = "<3.60"
+ipython = "*"
+twine = "*"
+
+[requires]
+python_version = "3.6"

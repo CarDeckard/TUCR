@@ -51,8 +51,8 @@ class WAHStorageWordBuilder(WAHStorage):
             #Checks if bitVector needs to be expanded
             self.ensureStorageFits(self.appendWordIndex+1)
         
-        # Update the total number of words being represented
-        self.totalLength += 1
+            # Update the total number of words being represented
+            self.totalLength += 1
             
     ## appends a run to the bitvector
     def appendRun(self, runType, length):
