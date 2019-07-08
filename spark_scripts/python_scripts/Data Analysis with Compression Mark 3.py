@@ -10,7 +10,8 @@ Complete list of data Columns:
 ID	Case Number	Date	Block	IUCR	Primary Type	Description	Location Description	Arrest	Domestic	Beat	District	Ward	Community Area	FBI Code	X Coordinate	Y Coordinate	Year	Updated On	Latitude	Longitude	Location	Historical Wards 2003-2015	Zip Codes	Community Areas	Census Tracts	Wards	Boundaries - ZIP Codes	Police Districts	Police Beats
 
 """
-
+import numpy as np
+import pandas as pd
 import sys
 sys.path.append("../../bitmaps/WAH")
 sys.path.append("../../bitmaps")
@@ -30,7 +31,7 @@ df_locationDescription = df.select("Location Description").distinct()
 values_locationDescription = df_locationDescription.collect()
 
 
-"""
+
 # FIXME: Uncomment these!
 
 #df.select("Primary Type").distinct().show()
@@ -78,7 +79,7 @@ for i in temp_d:
     elif i == True:
         bin_district += '1'
 print bin_district
-"""
+
 
 # Make an ID column
 dfWithID = df.withColumn("RowID",monotonically_increasing_id())
@@ -93,7 +94,34 @@ for v in values_locationDescription:
     bv = bitVectorWAH()
     for row in rowIDs:
         #print row
+        
         bv.add(row[0])
+        
     
     index_locationDescription.append(bv)
     print bv
+    
+    
+#Initialize spark session
+#spark = SparkSession.builder.master("local").getOrCreate()
+#Create easy variable for spark context
+sc = spark.sparkContext
+#Pandas dataframe of bitvectors and ids
+bvs = pd.DataFrame(index_locationDescription, columns=['BitVectors'])
+#Spark dataframe of same things
+sparkDataFrame = spark.createDataFrame(bvs)
+#printing the dataframe
+sparkDataFrame.show()
+#make parquet file
+#sparkDataFrame.write.parquet("test.parquet")
+
+
+#################################################################
+#Let's go BACKWARDS BABY!!!                                     #
+#################################################################
+#Creates a variable for that parquet boi
+parquetFile = spark.read.parquet("test.parquet")
+#Creates temp view for parquet file
+parquetFile.createOrReplaceTempView("parquetFile")
+temp = parquetFile
+temp.show()
