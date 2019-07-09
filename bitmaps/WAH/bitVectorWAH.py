@@ -23,6 +23,17 @@ class bitVectorWAH(ABCBitVector):
     def add(self,row):
         self.baseStorage.addSequential(row)
         
+    
+    #In Place Update
+    # @param self       - BitVector in which the '1' is removed 
+    # @param other      - BitVector in which the '1' is added
+    # @param UpdateBV   - BitVector mask that is used to remove and add the update
+    def IPUpdate(self, other, UpdateBV):
+        self.baseStorage &= ~(UpdateBV.baseStorage)
+        
+        other.baseStorage |= UpdateBV.baseStorage
+    
+        
     def COUNT(self, TYPE):
         # Adds up all the appearencses of TYPE in the BitVector
         numCount = 0
