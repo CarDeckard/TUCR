@@ -50,8 +50,7 @@ for v in values_primaryType:
     pt = df.select("Primary Type").rdd.map(lambda row: row[0] == v[0])
     index_primaryType.append(pt)
     print pt.take(10)
-
-
+    
 index_district = []
 print "\nIndex for District:\n"
 for v in values_district:    
@@ -60,6 +59,7 @@ for v in values_district:
     index_district.append(d)
     print d.take(10)
 
+    
 #Creates and prints a binary index for 'Primary Type'
 bin_primaryType = ''
 temp_pt = pt.take(200)
@@ -100,6 +100,9 @@ for v in values_locationDescription:
     
     index_locationDescription.append(bv.baseStorage.storage.astype(np.int64,casting="unsafe").tolist())
     print bv.baseStorage.storage.tolist()
+    
+    
+
     
     
 #Initialize spark session
