@@ -20,13 +20,13 @@ class WAHStorage(object):
         if wordSizeInBits > 64:
             raise Exception("Word size cannot be bigger than 64.")
         elif wordSizeInBits > 32:
-            self.dtype = np.uint64
+            self.dtype = np.int64
         elif wordSizeInBits > 16:
-            self.dtype = np.uint32
+            self.dtype = np.int32
         elif wordSizeInBits > 8:
-            self.dtype = np.uint16
+            self.dtype = np.int16
         else:
-            self.dtype = np.uint8
+            self.dtype = np.int8
         
         # WAH-encoded literal: wordSizeInBits-bit word
         # [1-bit type header = 0] [literalSizeInBits-bit literal word]
