@@ -22,7 +22,7 @@ class bitVectorWAH(ABCBitVector):
     ## FIXME: Doesn't work if rows are out of order! See WAHStorageBitBuilder
     def add(self,row):
         self.baseStorage.addSequential(row)
-        
+                
     def COUNT(self, TYPE):
         # Adds up all the appearencses of TYPE in the BitVector
         numCount = 0
