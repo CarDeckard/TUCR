@@ -98,8 +98,8 @@ for v in values_locationDescription:
         bv.add(row[0])
         
     
-    index_locationDescription.append(bv)
-    print bv
+    index_locationDescription.append(bv.baseStorage.storage.astype(np.int64,casting="unsafe").tolist())
+    print bv.baseStorage.storage.tolist()
     
     
 #Initialize spark session
@@ -107,21 +107,23 @@ for v in values_locationDescription:
 #Create easy variable for spark context
 sc = spark.sparkContext
 #Pandas dataframe of bitvectors and ids
-bvs = pd.DataFrame(index_locationDescription, columns=['BitVectors'])
+bvs = pd.DataFrame(data=zip(range(len(index_locationDescription)), index_locationDescription), columns=['RowID','BitVectors'])
 #Spark dataframe of same things
 sparkDataFrame = spark.createDataFrame(bvs)
 #printing the dataframe
 sparkDataFrame.show()
 #make parquet file
-#sparkDataFrame.write.parquet("test.parquet")
+sparkDataFrame.write.parquet("test3.parquet")
 
 
 #################################################################
 #Let's go BACKWARDS BABY!!!                                     #
 #################################################################
 #Creates a variable for that parquet boi
-parquetFile = spark.read.parquet("test.parquet")
-#Creates temp view for parquet file
+parquetFile = spark.read.parquet("test3.parquet")
+
+#Creates a name for this table.
 parquetFile.createOrReplaceTempView("parquetFile")
+
 temp = parquetFile
-temp.show()
+temp.sort("RowID").show()
