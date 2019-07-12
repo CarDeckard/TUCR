@@ -6,7 +6,11 @@ Created on Thu Jul 11 15:48:17 2019
 @author: admin
 """
 class Indexs(object):
-    def readRow:
+    #returns row that was asked for
+    def readRow(bitMap, row):
+        pass
     
-    def readCol:
+    #returns column that was asked for
+    def readCol(bitMap, col):
+        pass
     

@@ -8,9 +8,16 @@ Created on Thu Jul 11 15:48:52 2019
 
 from Indexs import Indexs
 
-class UpdateIndex(Indexs)
-    def appendRow:
+class UpdateIndex(Indexs):
     
-    def deleteRow:
+    # add on another row
+    def appendRow( rowID, newVal):
+        pass
     
-    def updateRow:
+    # remove an added row
+    def deleteRow( rowID):
+        pass
+    
+    #remove a row than add a row inplace of it
+    def updateRow( rowID, newVal):
+        pass

@@ -7,5 +7,18 @@ Created on Thu Jul 11 15:49:38 2019
 """
 
 from UpdateIndex import UpdateIndex
+from 
 
-class updateUCB(UpdateIndex):
+class updateUCB():
+    
+    def __init__(bitMap):
+
+    def readRow(rowID):
+        
+    def readCol(colID):
+        
+    def appendRow( rowID, newValue):
+        
+    def deleteRow( rowID):
+        
+    def updateRow( rowID, newValue):
