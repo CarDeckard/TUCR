@@ -62,16 +62,6 @@ def UpBit(originalBM, updateBM, rowID, column):
     
     
 '''
-    Change the original bitmap to reflect the changes that have accumulated in
-    the update bitmap 
-'''
-    
-def pushUpBit(originalBM, updateBM):
-    
-    originalBM ^= updateBM
-    
-    
-'''
     Update Conscious Bitmap works by storing a dirty bit to represent if the
     row is valid or not. When updating the row dirty bit is unset. The row is
     than added at the bottom of the bitmap keeping the rowID and setting the
@@ -82,7 +72,12 @@ def pushUpBit(originalBM, updateBM):
     @param EV           - dirty bit vector 
 '''
     
-def UCB(originalBM, rowID, EV):
+def UCB(originalBM, rowID, EV):'
+
+
+update row
+delete row
+add row
     
     
     
