@@ -23,10 +23,10 @@ def InPlaceUpdate(self, other, updateMask):
     
     #updateMask holds the location that is being update we can AND
     #self with the flip of updateMask to copy over everything but that one bit
-    self.storage = self.AND( ~(updateMask) )
+    self.baseStorage.storage = self.AND( ~(updateMask) )
     
     #doing an OR with other and updateMask changes the location of the update 
-    other.storage = other.OR(updateMask)
+    other.baseStorage.storage = other.OR(updateMask)
     
     
     
