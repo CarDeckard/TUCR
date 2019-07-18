@@ -30,16 +30,16 @@ class WAHStorageWordBuilder(WAHStorage):
     def appendWord(self, word):
         word = self.dtype(word)
         if not self.isLiteral(word):
-            raise Exception("word %s is not a literal"%(np.binary_repr(word, width=self.wordSizeInBits)))
+            self.appendRun(self.getRunType(word),self.getRunLen(word))
             
         # The word is actually a run of type 0
-        if word == self.dtype(0):
+        elif word == self.dtype(0):
             self.appendRun(0,1)
         
         # The word is actually a run of type 1
-        elif self.isLiteralRunOfOnes(word & ~(self.dtype(1) << self.literalSizeInBits)):
+        elif self.isLiteralRunOfOnes(word):
             self.appendRun(1,1)
-        
+            
         # The word is really is a literal
         else:
             #Sets word in correct spot in bitVector
@@ -66,12 +66,12 @@ class WAHStorageWordBuilder(WAHStorage):
         #        an overflow
         # In this special case, we can update the existing run.
         if (self.appendWordIndex > 0) and (not self.isLiteral(self.storage[self.appendWordIndex - 1])) and self.getRunType(self.storage[self.appendWordIndex - 1]) == runType:
-            print "merging"
+            #print "merging"
             self.storage[self.appendWordIndex - 1] += length
 
         # We must append a new run
         else:
-            print "appending new"
+           # print "appending new"
             self.storage[self.appendWordIndex] = ((self.dtype(2) | runType) << self.runSizeInBits) | length
             
             self.appendWordIndex += 1

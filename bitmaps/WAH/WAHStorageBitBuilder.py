@@ -34,6 +34,7 @@ class WAHStorageBitBuilder(WAHStorageWordBuilder):
     def appendWord(self,word):
         if self.partialLiteralLength == 0:
             super(WAHStorageBitBuilder, self).appendWord(word)
+            self.numRows = self.totalLength * self.literalSizeInBits
         else:
             raise Exception("Cannot append a word right now. Make you have filled out the current one first.")
     

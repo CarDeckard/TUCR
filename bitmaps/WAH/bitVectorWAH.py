@@ -18,6 +18,9 @@ class bitVectorWAH(ABCBitVector):
     #######################################################################
     def append(self,bit):
         self.baseStorage.append(bit)
+        
+    def appendWord(self,word):
+        self.baseStorage.appendWord(word)
     
     ## FIXME: Doesn't work if rows are out of order! See WAHStorageBitBuilder
     def add(self,row,bit=1):
@@ -65,7 +68,12 @@ class bitVectorWAH(ABCBitVector):
                     
         return numCount
                 
-        
+    def addWords(self, storage):
+        new = WAHStorageWordBuilder()
+        for i in range(len(storage)):
+            new.appendWord(storage[i])
+        self.baseStorage.storage = new
+            
     
     
         
@@ -169,7 +177,7 @@ class bitVectorWAH(ABCBitVector):
                 
                 #If you is literal (me is run)
                 if youLiteral:
-                    meRunType = me.baseStorage.getRunType(meActiveWord)
+                    meRunType = me.wahStorage.getRunType(meActiveWord)
                     
                     if meRunType == 0:
                         new.appendRun(0,1)
@@ -302,7 +310,7 @@ class bitVectorWAH(ABCBitVector):
 
         #Checks if Bit Vectors are same size (throws error if not)
         if self.baseStorage.totalLength != other.baseStorage.totalLength:
-            raise Exception("Not the same size.")
+            raise Exception("Not the same size. %d != %d"%(self.baseStorage.totalLength,other.baseStorage.totalLength))
         
         # These are the iterators which
         me = WAHStorageWordIterator(self.baseStorage)
@@ -315,6 +323,11 @@ class bitVectorWAH(ABCBitVector):
                         
             (meActiveWord, meLenRemaining) = me.current()
             (youActiveWord, youLenRemaining) = you.current()
+            print "active word: me:%d,%d you:%d,%d"%(meActiveWord,meLenRemaining,youActiveWord,youLenRemaining)
+            print "wordsProcessed,totalLength: me:%d,%d you:%d,%d"%(me.wordsProcessed,me.wahStorage.getTotalLength(),you.wordsProcessed,you.wahStorage.getTotalLength())
+            v = raw_input()
+            if v == "x":
+                raise Exception("Exiting.")
             
             meLiteral = me.wahStorage.isLiteral(meActiveWord)
             youLiteral = you.wahStorage.isLiteral(youActiveWord)
@@ -339,8 +352,8 @@ class bitVectorWAH(ABCBitVector):
             elif (not meLiteral) and (not youLiteral):
                                 
                 #Get the run type of both BV
-                meType = me.wahStorage.getRunType(meLiteral)
-                youType = you.wahStorage.getRunType(youLiteral)
+                meType = me.wahStorage.getRunType(meActiveWord)
+                youType = you.wahStorage.getRunType(youActiveWord)
                 
                 #If both are runs of 0's
                 if meType == 0 and youType == 0:

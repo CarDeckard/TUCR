@@ -31,7 +31,7 @@ class WAHStorageWordIterator(object):
         
         self.activeWord = self.wahStorage.getWordAt(self.activeWordIndex)
         if self.wahStorage.isLiteral(self.activeWord):
-            self.lenRemaining = self.wahStorage.dtype(0)
+            self.lenRemaining = self.wahStorage.dtype(1)
         else:
             self.lenRemaining = self.wahStorage.getRunLen(self.activeWord)
         
@@ -60,10 +60,10 @@ class WAHStorageWordIterator(object):
         
         else:         
             while(numWords > 0):
-                # Because the length remaining does not include current word,
-                # then lenRemaining == 0 means that we are finished with the current
+                # Because the length remaining includes current word,
+                # then lenRemaining == 1 means that we are finished with the current
                 # run or literal, and are ready to move to the next one.
-                if self.lenRemaining == self.wahStorage.dtype(0):
+                if self.lenRemaining == self.wahStorage.dtype(1):
                     
                     # Move to the next word
                     self.activeWordIndex += 1
@@ -76,11 +76,12 @@ class WAHStorageWordIterator(object):
                     # If new active word is a literal, set length to one
                     else:
                         self.lenRemaining = self.wahStorage.dtype(1)
+                else:
+                    # You processed a word, so decrease the length remaining.
+                    self.lenRemaining -= self.wahStorage.dtype(1)
                 
-                # You processed a word, so decrease the length remaining.
-                self.lenRemaining -= self.wahStorage.dtype(1)
                 numWords -= 1
-                self.wordsProcessed += 1
+                self.wordsProcessed += 1                
                 
             #print "Processed %d words..."%(self.wordsProcessed)
             return ((self.activeWord,self.lenRemaining))
