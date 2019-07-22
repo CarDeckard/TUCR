@@ -325,9 +325,9 @@ class bitVectorWAH(ABCBitVector):
             (youActiveWord, youLenRemaining) = you.current()
             print "active word: me:%d,%d you:%d,%d"%(meActiveWord,meLenRemaining,youActiveWord,youLenRemaining)
             print "wordsProcessed,totalLength: me:%d,%d you:%d,%d"%(me.wordsProcessed,me.wahStorage.getTotalLength(),you.wordsProcessed,you.wahStorage.getTotalLength())
-            v = raw_input()
-            if v == "x":
-                raise Exception("Exiting.")
+            #v = raw_input()
+            #if v == "x":
+                #raise Exception("Exiting.")
             
             meLiteral = me.wahStorage.isLiteral(meActiveWord)
             youLiteral = you.wahStorage.isLiteral(youActiveWord)
