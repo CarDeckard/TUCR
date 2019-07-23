@@ -14,12 +14,16 @@
 \section{Introduction}
 \justify
 
+Data warehouses have become an integral aspect of large-scale computing. Corporations such as Google, Amazon, and Apple use these massive warehouses of servers to store and compute queries on their data. Of course, this computing capability comes at a cost. Data warehouses need to stay cool to utilize the full computing capabilities due to heat limitations of CPUs. We have seen that a majority of data warehouses' running costs are cooling [Citation hopefully].
+%Would like some feedback on this paragraph and possible citations that are %needed still. -Collin
+There are various ways to deal with the heat from the computers. One would be more efficient cooling which could be a large upfront cost. Software changes could improve efficiency and storage while fixing heat problems without the need for improved cooling units.     
 %
 %the background knowledge that will help others to understand some of the paper 
 %
 \section{Background}
 \justify
 
+<<<<<<< HEAD:Paper/Research Paper.tex
 In a number of database environments, with applications such as weather, network traffic, crime, etc., %(list them, but only include scenarios that are amenable to updateable bitmap indices)
 the industry standard practice is to generate pre-calculated summary tables which can speed up access to data.\par
 
@@ -30,6 +34,14 @@ Bitmaps are two dimensional arrays where the rows represent tuples and the colum
 For example, we will use the following list: [(3, Green), (4, Blue), (2, Red), (4, Red), (2, Blue)]. 
 %3Green, 4 Blue, 2Red, 4Red, 2Blue . 
 This would create a bitmap as featured in Fig. 1. From this we can find all Red numbers greater than 2 by using an AND of bins 3 and 4 as well as an XAND with the Red bin. \par
+=======
+
+In order to get the most out of this paper two things have to be understood; the basics of bitmaps and the basics of WAH compression. \par
+
+Bitmaps are two dimensional arrays where the rows represent tuples and the columns represent bins of binary vectors where a “1” represents that the tuple value is at that index location. This enables the ability to perform very fast logical operations onto a single column or group of columns rather than the entire dataset. For example, say we have a data type that has a number as well as a color. \par
+
+For example, we will use the list 3 Green, 4 Blue, 2 Red, 4 Red, 2 Blue. This would create a bitmap as featured in Fig. 1. From this we can find all Red numbers greater than 2 by using an AND of bins 3 and 4 as well as an XAND with the Red bin. \par
+>>>>>>> 005e2701a4a1185880ec9df4c4730a66d1a2b9ec:Proj2019/Paper/Research Paper.tex
 
 %image bitmap.png 
 
