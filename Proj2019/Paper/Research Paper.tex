@@ -23,6 +23,8 @@ There are various ways to combat these limitations; one could be more efficient 
 \par
 Software solutions have evolved over the ages, with the main solution being more efficient indexing and storage through the implementation of bitmaps. Bitmaps index data through equality vectors which become cumbersome as the dataset grows.  %I believe there are other means of indexing data beyond just equality vectors, but we can look into this^
 Compression of these bitmaps have become a popular strategy to reduce storage space used and performance improvements [Citation about advantages of compression]. Compression of bitmaps have seen many forms as research is done to make the compression and operation more efficient. 
+\par 
+Compression is useful when the data is immutable but this is not always the case. Updating bitmap indices when data changes without recompiling the whole index would greatly improve efficiency and power consumption. Research has made great strides in updating bitmaps effectively. Our goal was to develop a framework that included updates. 
 %
 %the background knowledge that will help others to understand some of the paper 
 %
@@ -57,7 +59,15 @@ RoaringBitmap is another popular compression strategy and the second compression
 %The steps that we took to get where we are
 %
 \section{Methods}
+%
+% Maybe talk about how we are setting up a software framework for previous cluster setup. 
+% Maybe ease of setup and implementation 
+% Features and main uses of our framework
+%
+
 Last summer, our team was able to design and build a small scale cluster system that allowed for jobs to be processed using the popular project management tool, Apache Spark. Through this system, we were able to imitate a server system as well as record power measurements along side total energy used. Due to our hardware setup already being constructed, we were able to begin this summer's research focused solely on comparing popular compression techniques and the ability to update such compressed data efficiently and effectively. \par 
+%  ^^ This paragraph doesn't really align with our current goals
+% --Collin
 As mentioned above, we decided to focus ourselves on the evaluation of the popular compression techniques of WAH and RoaringBitMaps. Due to the work that had been done prior, our software had to be based out of Python. This was not a problem initially, as we were able to find open source code on RoaringBitMaps directly from their website that was written in Python. Unfortunately, the same cannot be said for WAH; there was no WAH implementation that was written in Python, therefore developing one was our starting point. \par
 
 
@@ -70,13 +80,17 @@ As mentioned above, we decided to focus ourselves on the evaluation of the popul
 %
 \section{Results}
 \justify
-
+% Touch again on our main contributions and framework uses
+% Possible test results? (Might have to get done later)
 %
 %what our results mean for the community
 %
 \section{Discussion}
 \justify
-
+% How could companies use this research?
+% What scenarios would a company want to use this research?
+    % What companies would want to use this research? 
+    % Tradeoffs with other methods?
 %
 %what can be done moving forward
 %
