@@ -1,18 +1,31 @@
 %built list of things I did
 \documentclass{article}
 
+\usepackage{graphicx}
+\graphicspath{ {.} }
+\DeclareGraphicsExtensions{.png,.pdf}
+
 \title{Detailed Instructions Into Further Bitmap Updating and Manipulation}
 \date{2019 \\ August }
 \author{Carson Deckard \and Collin Lehrian \and Josiah McClurg \and Shane Wozniak \\ \\ Computer Science \&  Engineering Department \\ Taylor University}
 
+% Here is one way that you can define a custom command:
+\def \bigw {0.9\columnwidth}
+\def \smallw {0.5\columnwidth}
+
 \begin{document}
 \maketitle
 
+%FIXME: Need to move these to the right spot in the text.
+\includegraphics[width=\bigw]{AandB}
+
+\includegraphics[width=\smallw]{bitmap}
+
+\includegraphics[width=\bigw]{wahcompression}
 %
 %The motivation for why our research is worth looking at 
 %
 \section{Introduction}
-\justify
 Data warehouses have become an integral aspect of large-scale computing. Corporations such as Google, Amazon, and Apple use these massive warehouses of servers to store and compute queries on their data. Of course, this computing capability comes at a cost. Not only is conducting operations on such a quantity of servers expensive but, in doing so, those servers develop a large amount of heat. Effects of high server temperatures results in thermal throttling of the CPU's, reducing performance and increasing possibility of hardware failure [Exploring Power-Performance Tradeoffs in Database Systems??].
 % Maybe the following link: https://www.anixter.com/content/dam/Suppliers/Upsite/Control%20Data%20Center%20Cooling%20Costs.pdf
 Data warehouses, in turn, need to stay cool to allow utilization of their system's full computing capabilities. It can be seen, in fact, that a majority of data warehouses' running costs are due to cooling [Citation hopefully--Exploring Power-Performance Tradeoffs in Database Systems??].
@@ -29,8 +42,6 @@ Compression is useful when the data is immutable but this is not always the case
 %the background knowledge that will help others to understand some of the paper 
 %
 \section{Background}
-\justify
-
 A basic understanding of two concepts is required to sufficiently understand this material; the basics of bitmaps and the basics of Word-Aligned Hybrid (WAH) compression. \par
 
 Bitmaps are two dimensional arrays where the rows represent tuples and the columns represent bins of binary vectors where a “1” represents that the tuple value is at that index location. This enables the ability to conduct fast logical operations on a single column, or group of columns, rather than the entire dataset. For example, one could apply bitmaps to a dataset whose data type contains a number as well as a color. \par
@@ -72,36 +83,45 @@ As mentioned above, we decided to focus ourselves on the evaluation of the popul
 
 
 
-\justify
 
 
 %
 %What we got out of our research 
 %
 \section{Results}
+<<<<<<< HEAD:Proj2019/Paper/Research Paper.tex
 \justify
 % Touch again on our main contributions and framework uses
 % Possible test results? (Might have to get done later)
+=======
+
+
+>>>>>>> c04a00f0a12b0499fe42b35f72dcbfae5521c1bc:Proj2019/Paper/main.tex
 %
 %what our results mean for the community
 %
 \section{Discussion}
+<<<<<<< HEAD:Proj2019/Paper/Research Paper.tex
 \justify
 % How could companies use this research?
 % What scenarios would a company want to use this research?
     % What companies would want to use this research? 
     % Tradeoffs with other methods?
+=======
+
+
+>>>>>>> c04a00f0a12b0499fe42b35f72dcbfae5521c1bc:Proj2019/Paper/main.tex
 %
 %what can be done moving forward
 %
 \section{Conclusion \& Future Works}
-\justify
+
 
 %
 %who gave us moneys
 %
 \section{Acknowledgements}
-\justify
+
 
 We would like to thank FMUS, as well as The Women’s Giving Circle, for allowing us to financially continue our research as well as grant us with the opportunity to pursue our  academic growth. We would also like to thank Taylor University for allowing us access to their labs and resources. \cite{bbcCompression95} \par
 
@@ -109,7 +129,7 @@ We would like to thank FMUS, as well as The Women’s Giving Circle, for allowin
 %who gave us  knowledges
 %
 \section{References}
-\justify
+
 
 \bibliography{bibliography}
 \bibliographystyle{ieeetr}
