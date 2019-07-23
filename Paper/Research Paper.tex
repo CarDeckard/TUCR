@@ -3,7 +3,7 @@
 
 \title{Detailed Instructions Into Further Bitmap Updating and Manipulation}
 \date{2019 \\ August }
-\author{Carson Deckard \and Collin Lehrian \and Josiah McClurg \and Shane Wozniak \\ Computer Science & Engineering Department \\ Taylor University}
+\author{Carson Deckard \and Collin Lehrian \and Josiah McClurg \and Shane Wozniak \\ \\ Computer Science \&  Engineering Department \\ Taylor University}
 
 \begin{document}
 \maketitle
@@ -20,17 +20,26 @@
 \section{Background}
 \justify
 
-In order to get the most out of this paper two things have to be understood; the basics of bitmaps and the basics of WAH compression. \par
+In a number of database environments, with applications such as weather, network traffic, crime, etc., %(list them, but only include scenarios that are amenable to updateable bitmap indices)
+the industry standard practice is to generate pre-calculated summary tables which can speed up access to data.\par
+
+A basic understanding of two concepts is required to sufficiently understand this material; the basics of bitmaps and the basics of Word-Aligned Hybrid (WAH) compression. \par
 
 Bitmaps are two dimensional arrays where the rows represent tuples and the columns represent bins of binary vectors where a “1” represents that the tuple value is at that index location. This enables the ability to perform very fast logical operations onto a single column or group of columns rather than the entire dataset. For example, say we have a data type that has a number as well as a color. \par
 
-For example, we will use the list 3Green, 4 Blue, 2Red, 4Red, 2Blue. This would create a bitmap as featured in Fig. 1. From this we can find all Red numbers greater than 2 by using an AND of bins 3 and 4 as well as an XAND with the Red bin. \par
+For example, we will use the following list: [(3, Green), (4, Blue), (2, Red), (4, Red), (2, Blue)]. 
+%3Green, 4 Blue, 2Red, 4Red, 2Blue . 
+This would create a bitmap as featured in Fig. 1. From this we can find all Red numbers greater than 2 by using an AND of bins 3 and 4 as well as an XAND with the Red bin. \par
 
 %image bitmap.png 
 
-Word Aligned Hybrid (WAH) is a popular compression strategy used often as the benchmark against newly created compression strategies. WAH compression is comprised of two types of words; literal and fill. WAH works by reading in a whole word. For 32-bit words the literal words would store 31-bits and the fill words would be in multiples of 31. For 64-bit words literal words would store 63-bit and fill words would be multiples of 63. This is done because the most significant bit (MSB) represents whether the compressed word is a literal word or a fill word. For 32-bit words, the MSB of literal words is set to 0 followed by the rest of the 31 bits. Fill words have their MSB set to 1. The following bit denotes whether the fill word is of 1’s or 0’s. The remaining 30-bits represent how many multiples of 31 there are. \par
+Word-Aligned Hybrid, or WAH, is a popular compression strategy used often as the benchmark against newly created compression strategies. The performance of WAH compression is primarily attributed to the way it processes data as words, or blocks of data whose size correspond with that of the CPU's architecture. An application of WAH in a system using a 64-bit CPU architecture would result in WAH being able to process a word of 64-bits at a time, and so on.
+\par 
+WAH compression is comprised of two types of words: fills and literals. Data that would constitute a fill would be a consecutive run of a single value, whose length is a multiple of one-bit less than a complete word. Data that would then constitute a literal word would be any combination of 1's and 0's, whose length is also one-bit less than a complete word. For 32-bit words, the fill words would store multiples of 31-bits, and the literals would store 31-bits, whereas in 64-bit words, the fill words would store multiples of 63-bits, and the literals would store 63-bits. 
+\par 
+In both cases, the remaining bit is used as an identifier, representing whether the compressed word is a fill word or a literal word, denoted as a 1 or 0, respectively. In the case of a literal word in 32-bit architecture, the identifier is set to 0 with the remaining 31-bits following. In the case of fills, the bit immediately following the previously mentioned identifier denotes whether the fill word is of 1’s or 0’s, with the remaining 30-bits represent how many multiples of 31 there are. \par
 
-To show WAH compression we will first show a 128-bit hexadecimal number being compressed into both literal words and a fill word (Fig. 2). We will then feature two 32-bit WAH compressed hexadecimal numbers being AND’ed together (Fig. 3). As you’ll notice A starts out with a run of 1’s. Anything AND’ed against a 1 is just itself so we can just copy over the two first words of B. B than has a fill word that represents two runs of 0’s. As we can recall anything AND’ed with 0 is going to be 0. This means that we can just copy down the fill word into our answer. Both of our last words are just literal words that can be AND’ed together without any special case. \par
+To show WAH compression we will first show a 128-bit hexadecimal number being compressed into both literal words and a fill word (Fig. 2). We will then feature two 32-bit WAH compressed hexadecimal numbers being AND’ed together (Fig. 3). As you’ll notice A starts out with a run of 1’s. Anything AND’ed against a 1 is just itself so we can just copy over the two first words of B. B than has a fill word that represents two runs of 0’s. As we can recall anything AND’ed with 0 is going to be 0. This means that we can just copy down the fill word into our result. Both of our last words are just literal words that can be AND’ed together without any special case. \par
 
 %image wahcompression.png
 
@@ -42,7 +51,13 @@ RoaringBitmap is another popular compression strategy and the second compression
 %The steps that we took to get where we are
 %
 \section{Methods}
+Last summer, our team was able to design and build a small scale cluster system that allowed for jobs to be processed using the popular project management tool, Apache Spark. Through this system, we were able to imitate a server system as well as record power measurements along side total energy used. Due to our hardware setup already being constructed, we were able to begin this summer's research focused solely on comparing popular compression techniques and the ability to update such compressed data efficiently and effectively. \par 
+As mentioned above, we decided to focus ourselves on the evaluation of the popular compression techniques of WAH and RoaringBitMaps. Due to the work that had been done prior, our software had to be based out of Python. This was not a problem initially, as we were able to find open source code on RoaringBitMaps directly from their website that was written in Python. Unfortunately, the same cannot be said for WAH; there was no WAH implementation that was written in Python, so developing one was our starting point. \par
+
+
+
 \justify
+
 
 %
 %What we got out of our research 
@@ -59,7 +74,7 @@ RoaringBitmap is another popular compression strategy and the second compression
 %
 %what can be done moving forward
 %
-\section{Conclusion & Future Works}
+\section{Conclusion \& Future Works}
 \justify
 
 %
@@ -68,7 +83,7 @@ RoaringBitmap is another popular compression strategy and the second compression
 \section{Acknowledgements}
 \justify
 
-We would like to thank FMUS as well as The Women’s Giving Circle for allowing us to financially continue our research as well as grant us with the opportunity to pursue our  academic growth. We would also like to thank Taylor University for allowing us access to their labs and resources. \par
+We would like to thank FMUS, as well as The Women’s Giving Circle, for allowing us to financially continue our research as well as grant us with the opportunity to pursue our  academic growth. We would also like to thank Taylor University for allowing us access to their labs and resources. \par
 
 %
 %who gave us  knowledges
