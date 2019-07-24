@@ -24,9 +24,6 @@ Software solutions have evolved over the ages with the main solution being more 
 \section{Background}
 \justify
 
-In a number of database environments, with applications such as weather, network traffic, crime, etc., %(list them, but only include scenarios that are amenable to updateable bitmap indices)
-the industry standard practice is to generate pre-calculated summary tables which can speed up access to data.\par
-
 A basic understanding of two concepts is required to sufficiently understand this material; the basics of bitmaps and the basics of Word-Aligned Hybrid (WAH) compression. \par
 
 Bitmaps are two dimensional arrays where the rows represent tuples and the columns represent bins of binary vectors where a “1” represents that the tuple value is at that index location. This enables the ability to perform very fast logical operations onto a single column or group of columns rather than the entire dataset. For example, say we have a data type that has a number as well as a color. \par
