@@ -13,11 +13,14 @@
 %
 \section{Introduction}
 \justify
-Data warehouses have become an integral aspect of large-scale computing. Corporations such as Google, Amazon, and Apple use these massive warehouses of servers to store and compute queries on their data. Of course, this computing capability comes at a cost. Data warehouses need to stay cool to utilize the full computing capabilities due to heat limitations of CPUs. We have seen that a majority of data warehouses' running costs are cooling [Citation hopefully].
+Data warehouses have become an integral aspect of large-scale computing. Corporations such as Google, Amazon, and Apple use these massive warehouses of servers to store and compute queries on their data. Of course, this computing capability comes at a cost. Not only is conducting operations on such a quantity of servers expensive but, in doing so, those servers develop a large amount of heat. Effects of high server temperatures results in thermal throttling of the CPU's, reducing performance and increasing possibility of hardware failure [Exploring Power-Performance Tradeoffs in Database Systems??]. Data warehouses, in turn, need to stay cool to allow utilization of their system's full computing capabilities. It can be seen, in fact, that a majority of data warehouses' running costs are due to cooling [Citation hopefully--Exploring Power-Performance Tradeoffs in Database Systems??].
 %Would like some feedback on this paragraph and possible citations that are %needed still. -Collin
-There are various ways to deal with the heat from the computers. One would be more efficient cooling which could be a large upfront cost. Software changes could improve efficiency and storage while fixing heat problems without the need for improved cooling units.
+%Made some editz, hope you like em' booboo :* ~Shane
+    %(^^and if you don't like them, then Dr. McClurg made the edits)
+There are various ways to combat these limitations; one could be more efficient cooling equipment, however this could result in large upfront costs. Alternatively, software changes could improve load manageability, efficiency, and storage, all while also reducing the thermal impact of large-scale computation.
 \par
-Software solutions have evolved over the ages with the main solution being more efficient indexing and storage through bitmaps. Bitmaps index data through equality vectors which become cumbersome as the dataset grows. Compression of these bitmaps have become a popular strategy to reduce storage space used and performance improvements [Citation about advantages of compression]. Compression of bitmaps have seen many forms as research is done to make the compression and operation more efficient. 
+Software solutions have evolved over the ages, with the main solution being more efficient indexing and storage through the implementation of bitmaps. Bitmaps index data through equality vectors which become cumbersome as the dataset grows.  %I believe there are other means of indexing data beyond just equality vectors, but we can look into this^
+Compression of these bitmaps have become a popular strategy to reduce storage space used and performance improvements [Citation about advantages of compression]. Compression of bitmaps have seen many forms as research is done to make the compression and operation more efficient. 
 %
 %the background knowledge that will help others to understand some of the paper 
 %
@@ -26,15 +29,13 @@ Software solutions have evolved over the ages with the main solution being more 
 
 A basic understanding of two concepts is required to sufficiently understand this material; the basics of bitmaps and the basics of Word-Aligned Hybrid (WAH) compression. \par
 
-Bitmaps are two dimensional arrays where the rows represent tuples and the columns represent bins of binary vectors where a “1” represents that the tuple value is at that index location. This enables the ability to perform very fast logical operations onto a single column or group of columns rather than the entire dataset. For example, say we have a data type that has a number as well as a color. \par
+Bitmaps are two dimensional arrays where the rows represent tuples and the columns represent bins of binary vectors where a “1” represents that the tuple value is at that index location. This enables the ability to conduct fast logical operations on a single column, or group of columns, rather than the entire dataset. For example, one could apply bitmaps to a dataset whose data type contains a number as well as a color. \par
 
-For example, we will use the following list: [(3, Green), (4, Blue), (2, Red), (4, Red), (2, Blue)]. 
-%3Green, 4 Blue, 2Red, 4Red, 2Blue . 
-This would create a bitmap as featured in Fig. 1. From this we can find all Red numbers greater than 2 by using an AND of bins 3 and 4 as well as an XAND with the Red bin. \par
+Given the the following dataset, [(3, Green), (4, Blue), (2, Red), (4, Red), (2, Blue)], one could create a bitmap as featured below in Fig. 1. From this bitmap, we can then find all Red values greater than 2 by using an AND of bins 3 and 4 as well as an XAND with the Red bin. \par
 
 %image bitmap.png 
 
-Word-Aligned Hybrid, or WAH, is a popular compression strategy used often as the benchmark against newly created compression strategies. The performance of WAH compression is primarily attributed to the way it processes data as words, or blocks of data whose size correspond with that of the CPU's architecture. An application of WAH in a system using a 64-bit CPU architecture would result in WAH being able to process a word of 64-bits at a time, and so on.
+Word-Aligned Hybrid, or WAH, is a popular compression strategy. WAH is often used as the benchmark against which newly created compression strategies are compared. The performance of WAH compression is primarily attributed to the way it processes data as words, or blocks of data whose size correspond with that of the CPU's architecture. An application of WAH in a system using a 64-bit CPU architecture would result in WAH being able to process a word of 64-bits at a time, and so on.
 \par 
 WAH compression is comprised of two types of words: fills and literals. Data that would constitute a fill would be a consecutive run of a single value, whose length is a multiple of one-bit less than a complete word. Data that would then constitute a literal word would be any combination of 1's and 0's, whose length is also one-bit less than a complete word. For 32-bit words, the fill words would store multiples of 31-bits, and the literals would store 31-bits, whereas in 64-bit words, the fill words would store multiples of 63-bits, and the literals would store 63-bits. 
 \par 
@@ -48,12 +49,14 @@ To show WAH compression we will first show a 128-bit hexadecimal number being co
 
 RoaringBitmap is another popular compression strategy and the second compression algorithm that we compared. Roaring and WAH at their core set out to achieve the same goal. They are meant to compress bitmaps to save space in memory for large datasets. WAH uses RLE (Run-Length Encoding) to achieve this compression while Roaring is a hybrid compression that merges a sorted list and bitmap encoding. \par
 
+%Are we still using RoaringBitmap?? ~Shane
+
 %
 %The steps that we took to get where we are
 %
 \section{Methods}
 Last summer, our team was able to design and build a small scale cluster system that allowed for jobs to be processed using the popular project management tool, Apache Spark. Through this system, we were able to imitate a server system as well as record power measurements along side total energy used. Due to our hardware setup already being constructed, we were able to begin this summer's research focused solely on comparing popular compression techniques and the ability to update such compressed data efficiently and effectively. \par 
-As mentioned above, we decided to focus ourselves on the evaluation of the popular compression techniques of WAH and RoaringBitMaps. Due to the work that had been done prior, our software had to be based out of Python. This was not a problem initially, as we were able to find open source code on RoaringBitMaps directly from their website that was written in Python. Unfortunately, the same cannot be said for WAH; there was no WAH implementation that was written in Python, so developing one was our starting point. \par
+As mentioned above, we decided to focus ourselves on the evaluation of the popular compression techniques of WAH and RoaringBitMaps. Due to the work that had been done prior, our software had to be based out of Python. This was not a problem initially, as we were able to find open source code on RoaringBitMaps directly from their website that was written in Python. Unfortunately, the same cannot be said for WAH; there was no WAH implementation that was written in Python, therefore developing one was our starting point. \par
 
 
 
@@ -84,12 +87,15 @@ As mentioned above, we decided to focus ourselves on the evaluation of the popul
 \section{Acknowledgements}
 \justify
 
-We would like to thank FMUS, as well as The Women’s Giving Circle, for allowing us to financially continue our research as well as grant us with the opportunity to pursue our  academic growth. We would also like to thank Taylor University for allowing us access to their labs and resources. \par
+We would like to thank FMUS, as well as The Women’s Giving Circle, for allowing us to financially continue our research as well as grant us with the opportunity to pursue our  academic growth. We would also like to thank Taylor University for allowing us access to their labs and resources. \cite{bbcCompression95} \par
 
 %
 %who gave us  knowledges
 %
 \section{References}
 \justify
+
+\bibliography{bibliography}
+\bibliographystyle{ieeetr}
 
 \end{document}
